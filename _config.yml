@@ -1,0 +1,22 @@
+title: Greystoke's Blog
+description: Projects, builds, and things I've learned along the way.
+url: "https://greystoke1337.github.io"
+baseurl: "/blog"
+theme: minima
+
+author:
+  name: Greystoke
+
+header_pages:
+  - about.md
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
