@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog Editor</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  --fg: #24292f;
+  --fg-dim: #656d76;
+  --fg-placeholder: #a0a8b4;
+  --bg: #ffffff;
+  --bg-subtle: #f6f8fa;
+  --bg-inset: #eff1f3;
+  --border: #d0d7de;
+  --border-light: #e8ebef;
+  --accent: #0969da;
+  --accent-hover: #0550ae;
+  --accent-bg: #ddf4ff;
+  --success: #1a7f37;
+  --success-bg: #dafbe1;
+  --error: #cf222e;
+  --error-bg: #ffebe9;
+  --radius: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+html { height: 100%; }
+body {
+  font-family: var(--font-ui);
+  color: var(--fg);
+  background: var(--bg-subtle);
+  height: 100%;
+  line-height: 1.5;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 960px;
+  margin: 0 auto;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--border-light), 0 2px 16px rgba(0,0,0,0.06);
+}
+
+/* Top toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.toolbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-right: auto;
+  letter-spacing: -0.01em;
+}
+.toolbar-title span { color: var(--fg-dim); font-weight: 400; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg-subtle); border-color: #b6bcc5; }
+.btn:active { background: var(--bg-inset); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-primary:active { background: #033d8b; }
+.btn-primary:disabled {
+  background: #94bfeb;
+  border-color: #94bfeb;
+  cursor: not-allowed;
+}
+
+/* Meta fields */
+.meta-bar {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.field { display: flex; flex-direction: column; gap: 3px; }
+.field-grow { flex: 1; min-width: 200px; }
+.field label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.field input {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(9,105,218,0.12); }
+
+.slug-preview {
+  font-size: 11px;
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  padding-top: 1px;
+}
+
+/* Formatting toolbar */
+.format-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 16px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.format-bar .sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 6px;
+}
+
+.fmt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  transition: background 0.1s, border-color 0.1s;
+}
+.fmt-btn:hover { background: var(--bg); border-color: var(--border); }
+.fmt-btn:active { background: var(--bg-inset); }
+.fmt-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+.fmt-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.fmt-select {
+  padding: 3px 6px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  outline: none;
+}
+.fmt-select:hover { background: var(--bg); border-color: var(--border); }
+.fmt-select:focus { border-color: var(--accent); }
+
+/* Editor area */
+.editor-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor {
+  flex: 1;
+  padding: 24px 32px;
+  outline: none;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--fg);
+  overflow-y: auto;
+  cursor: text;
+}
+
+.editor:empty::before {
+  content: "Start writing your post...";
+  color: var(--fg-placeholder);
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* Editor typography */
+.editor h1 { font-size: 2em; font-weight: 700; margin: 0.6em 0 0.3em; letter-spacing: -0.02em; }
+.editor h2 { font-size: 1.5em; font-weight: 600; margin: 0.8em 0 0.3em; letter-spacing: -0.01em; }
+.editor h3 { font-size: 1.25em; font-weight: 600; margin: 0.8em 0 0.3em; }
+.editor p { margin: 0 0 0.8em; }
+.editor a { color: var(--accent); text-decoration: underline; }
+.editor code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 2px 6px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+}
+.editor pre {
+  margin: 0.5em 0 1em;
+  padding: 14px 16px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: 1.5;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+.editor ul, .editor ol { margin: 0 0 0.8em; padding-left: 1.5em; }
+.editor li { margin-bottom: 0.2em; }
+.editor blockquote {
+  margin: 0.5em 0 1em;
+  padding: 4px 16px;
+  border-left: 3px solid var(--border);
+  color: var(--fg-dim);
+}
+.editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  margin: 0.5em 0;
+  display: block;
+}
+.editor hr {
+  border: none;
+  border-top: 1px solid var(--border-light);
+  margin: 1.5em 0;
+}
+
+/* Image drop zone */
+.drop-zone {
+  margin: 0 20px 12px;
+  padding: 14px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: 12px;
+  color: var(--fg-dim);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.drop-zone input[type="file"] { display: none; }
+
+/* Settings panel */
+.settings-panel {
+  display: none;
+  padding: 12px 20px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+.settings-panel.open { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.settings-panel input[type="password"],
+.settings-panel input[type="text"] {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  outline: none;
+  width: 360px;
+  max-width: 100%;
+}
+.settings-panel input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(9,105,218,0.12); }
+
+.token-status { font-size: 12px; padding: 4px 0; }
+.token-status.saved { color: var(--success); }
+.token-status.missing { color: var(--fg-dim); }
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow), 0 4px 12px rgba(0,0,0,0.1);
+  animation: toast-in 0.2s ease-out;
+  max-width: 400px;
+  word-break: break-word;
+}
+.toast-success { background: var(--success-bg); color: var(--success); border: 1px solid #aceebb; }
+.toast-error { background: var(--error-bg); color: var(--error); border: 1px solid #ffcecb; }
+.toast-info { background: var(--accent-bg); color: var(--accent); border: 1px solid #b6d9f7; }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Link dialog */
+.link-dialog-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+}
+.link-dialog-overlay.active { display: flex; }
+.link-dialog {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  width: 400px;
+  max-width: 90vw;
+}
+.link-dialog h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.link-dialog .field { margin-bottom: 10px; }
+.link-dialog .field input { width: 100%; }
+.link-dialog-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* Publishing overlay */
+.publishing-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.7);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--fg-dim);
+}
+.publishing-overlay.active { display: flex; }
+
+/* Word count */
+.word-count {
+  font-size: 11px;
+  color: var(--fg-dim);
+  padding: 4px 20px 8px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .app { max-width: 100%; }
+  .editor { padding: 16px; }
+  .meta-bar { flex-direction: column; }
+  .format-bar { padding: 4px 8px; }
+  .settings-panel input[type="password"],
+  .settings-panel input[type="text"] { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="toolbar">
+    <div class="toolbar-title">Blog Editor <span>/ greystoke1337/blog</span></div>
+    <button class="btn" onclick="toggleSettings()" id="settingsBtn">Settings</button>
+    <button class="btn btn-primary" onclick="publish()" id="publishBtn">Publish</button>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="field field-grow">
+      <label for="token">GitHub Personal Access Token</label>
+      <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" spellcheck="false">
+    </div>
+    <button class="btn" onclick="saveToken()">Save Token</button>
+    <button class="btn" onclick="clearToken()">Clear</button>
+    <div class="token-status" id="tokenStatus"></div>
+  </div>
+
+  <div class="meta-bar">
+    <div class="field field-grow">
+      <label for="title">Title</label>
+      <input type="text" id="title" placeholder="Post title" oninput="onTitleChange()">
+    </div>
+    <div class="field">
+      <label for="date">Date</label>
+      <input type="date" id="date">
+    </div>
+    <div class="slug-preview" id="slugPreview"></div>
+  </div>
+
+  <div class="format-bar">
+    <select class="fmt-select" onchange="formatBlock(this.value); this.value='';" title="Heading level">
+      <option value="">Paragraph</option>
+      <option value="p">Normal text</option>
+      <option value="h1">Heading 1</option>
+      <option value="h2">Heading 2</option>
+      <option value="h3">Heading 3</option>
+    </select>
+
+    <div class="sep"></div>
+
+    <button class="fmt-btn" onclick="fmt('bold')" title="Bold (Ctrl+B)"><svg viewBox="0 0 24 24"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg></button>
+    <button class="fmt-btn" onclick="fmt('italic')" title="Italic (Ctrl+I)"><svg viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg></button>
+    <button class="fmt-btn" onclick="fmt('strikeThrough')" title="Strikethrough"><svg viewBox="0 0 24 24"><path d="M16 4c-1.5-1-3.2-1.5-5-1.5C7.7 2.5 5 5 5 8c0 1.5.5 2.8 1.5 3.8"/><line x1="4" y1="12" x2="20" y2="12"/><path d="M19 16c0 3-2.7 5.5-6 5.5-1.8 0-3.5-.5-5-1.5"/></svg></button>
+
+    <div class="sep"></div>
+
+    <button class="fmt-btn" onclick="fmt('insertUnorderedList')" title="Bullet list"><svg viewBox="0 0 24 24"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="5" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="5" cy="18" r="1" fill="currentColor" stroke="none"/></svg></button>
+    <button class="fmt-btn" onclick="fmt('insertOrderedList')" title="Numbered list"><svg viewBox="0 0 24 24"><line x1="10" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="10" y1="18" x2="20" y2="18"/><text x="5" y="8" font-size="7" fill="currentColor" stroke="none" text-anchor="middle" font-family="sans-serif">1</text><text x="5" y="14" font-size="7" fill="currentColor" stroke="none" text-anchor="middle" font-family="sans-serif">2</text><text x="5" y="20" font-size="7" fill="currentColor" stroke="none" text-anchor="middle" font-family="sans-serif">3</text></svg></button>
+
+    <div class="sep"></div>
+
+    <button class="fmt-btn" onclick="insertBlockquote()" title="Blockquote"><svg viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></button>
+    <button class="fmt-btn" onclick="insertCode()" title="Inline code"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+    <button class="fmt-btn" onclick="insertCodeBlock()" title="Code block"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="3 3" opacity="0.4"/></svg></button>
+    <button class="fmt-btn" onclick="insertHR()" title="Horizontal rule"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/></svg></button>
+
+    <div class="sep"></div>
+
+    <button class="fmt-btn" onclick="showLinkDialog()" title="Insert link (Ctrl+K)"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+    <button class="fmt-btn" onclick="document.getElementById('fileInput').click()" title="Insert image"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+  </div>
+
+  <div class="editor-wrap">
+    <div class="editor" id="editor" contenteditable="true" spellcheck="true"></div>
+    <div class="word-count" id="wordCount"></div>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <span>Drop images here or click to upload</span>
+      <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFiles(this.files)">
+    </div>
+  </div>
+</div>
+
+<!-- Link dialog -->
+<div class="link-dialog-overlay" id="linkOverlay">
+  <div class="link-dialog">
+    <h3>Insert Link</h3>
+    <div class="field">
+      <label for="linkText">Text</label>
+      <input type="text" id="linkText" placeholder="Link text">
+    </div>
+    <div class="field">
+      <label for="linkUrl">URL</label>
+      <input type="text" id="linkUrl" placeholder="https://...">
+    </div>
+    <div class="link-dialog-actions">
+      <button class="btn" onclick="closeLinkDialog()">Cancel</button>
+      <button class="btn btn-primary" onclick="insertLink()">Insert</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="publishing-overlay" id="publishingOverlay">Publishing...</div>
+
+<script>
+const REPO = 'greystoke1337/blog';
+const BRANCH = 'main';
+const API = 'https://api.github.com';
+const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/`;
+
+const editor = document.getElementById('editor');
+
+// --- Init ---
+document.getElementById('date').value = new Date().toISOString().slice(0, 10);
+updateTokenStatus();
+onTitleChange();
+
+// --- Token management ---
+
+function getToken() { return localStorage.getItem('blog_editor_gh_token') || ''; }
+
+function saveToken() {
+  const v = document.getElementById('token').value.trim();
+  if (!v) { toast('Please enter a token', 'error'); return; }
+  localStorage.setItem('blog_editor_gh_token', v);
+  document.getElementById('token').value = '';
+  updateTokenStatus();
+  toast('Token saved', 'success');
+}
+
+function clearToken() {
+  localStorage.removeItem('blog_editor_gh_token');
+  document.getElementById('token').value = '';
+  updateTokenStatus();
+  toast('Token cleared', 'info');
+}
+
+function updateTokenStatus() {
+  const el = document.getElementById('tokenStatus');
+  const t = getToken();
+  if (t) {
+    el.textContent = 'Token saved (' + t.slice(0, 7) + '...)';
+    el.className = 'token-status saved';
+  } else {
+    el.textContent = 'No token configured';
+    el.className = 'token-status missing';
+  }
+}
+
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+// --- Slug ---
+
+function toSlug(title) {
+  return title.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function getFilename() {
+  const date = document.getElementById('date').value;
+  const slug = toSlug(document.getElementById('title').value);
+  if (!slug) return '';
+  return `_posts/${date}-${slug}.md`;
+}
+
+function onTitleChange() {
+  const fn = getFilename();
+  document.getElementById('slugPreview').textContent = fn || '';
+}
+
+// --- Formatting commands ---
+
+function fmt(command) {
+  document.execCommand(command, false, null);
+  editor.focus();
+}
+
+function formatBlock(tag) {
+  if (!tag) return;
+  document.execCommand('formatBlock', false, '<' + tag + '>');
+  editor.focus();
+}
+
+function insertBlockquote() {
+  document.execCommand('formatBlock', false, '<blockquote>');
+  editor.focus();
+}
+
+function insertCode() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const text = range.toString();
+  if (text) {
+    const code = document.createElement('code');
+    code.textContent = text;
+    range.deleteContents();
+    range.insertNode(code);
+    sel.collapseToEnd();
+  } else {
+    const code = document.createElement('code');
+    code.textContent = '\u200B';
+    range.insertNode(code);
+    const r = document.createRange();
+    r.setStart(code.firstChild, 0);
+    r.setEnd(code.firstChild, 1);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+  editor.focus();
+}
+
+function insertCodeBlock() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const pre = document.createElement('pre');
+  const text = range.toString() || 'code here';
+  pre.textContent = text;
+  range.deleteContents();
+  range.insertNode(pre);
+  // Add a paragraph after so cursor can escape
+  const p = document.createElement('p');
+  p.innerHTML = '<br>';
+  pre.parentNode.insertBefore(p, pre.nextSibling);
+  sel.collapseToEnd();
+  editor.focus();
+}
+
+function insertHR() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  range.collapse(false);
+  const hr = document.createElement('hr');
+  const p = document.createElement('p');
+  p.innerHTML = '<br>';
+  range.insertNode(p);
+  range.insertNode(hr);
+  const r = document.createRange();
+  r.setStart(p, 0);
+  r.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(r);
+  editor.focus();
+}
+
+// --- Link dialog ---
+
+let savedRange = null;
+
+function showLinkDialog() {
+  const sel = window.getSelection();
+  if (sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+  document.getElementById('linkText').value = sel.toString() || '';
+  document.getElementById('linkUrl').value = '';
+  document.getElementById('linkOverlay').classList.add('active');
+  document.getElementById('linkUrl').focus();
+}
+
+function closeLinkDialog() {
+  document.getElementById('linkOverlay').classList.remove('active');
+  editor.focus();
+}
+
+function insertLink() {
+  const text = document.getElementById('linkText').value.trim();
+  const url = document.getElementById('linkUrl').value.trim();
+  if (!url) { toast('Enter a URL', 'error'); return; }
+
+  closeLinkDialog();
+
+  const sel = window.getSelection();
+  if (savedRange) {
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.textContent = text || url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+
+  const range = sel.getRangeAt(0);
+  range.deleteContents();
+  range.insertNode(a);
+  sel.collapseToEnd();
+  editor.focus();
+}
+
+// Handle Enter in link URL field
+document.getElementById('linkUrl').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); insertLink(); }
+  if (e.key === 'Escape') { e.preventDefault(); closeLinkDialog(); }
+});
+
+// --- Keyboard shortcuts ---
+
+editor.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    showLinkDialog();
+  }
+});
+
+// --- Word count ---
+
+editor.addEventListener('input', updateWordCount);
+
+function updateWordCount() {
+  const text = editor.innerText.trim();
+  if (!text) { document.getElementById('wordCount').textContent = ''; return; }
+  const words = text.split(/\s+/).filter(w => w.length > 0).length;
+  document.getElementById('wordCount').textContent = words.toLocaleString() + ' words';
+}
+
+// --- Image upload ---
+
+const dropZone = document.getElementById('dropZone');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+
+// Also allow pasting images directly into the editor
+editor.addEventListener('paste', e => {
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      handleFiles([item.getAsFile()]);
+      return;
+    }
+  }
+});
+
+async function handleFiles(files) {
+  const token = getToken();
+  if (!token) { toast('Configure a GitHub token in Settings first', 'error'); return; }
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) { toast('Skipped non-image: ' + file.name, 'error'); continue; }
+    await uploadImage(file, token);
+  }
+}
+
+async function uploadImage(file, token) {
+  const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
+  const filename = Date.now() + '-' + safeName;
+  const path = 'assets/images/' + filename;
+
+  toast('Uploading ' + file.name + '...', 'info');
+
+  try {
+    const base64 = await fileToBase64(file);
+    const res = await fetch(`${API}/repos/${REPO}/contents/${path}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github+json',
+      },
+      body: JSON.stringify({ message: 'Add image: ' + filename, content: base64, branch: BRANCH }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || res.statusText);
+    }
+
+    // Insert image into editor at current cursor position
+    const img = document.createElement('img');
+    img.src = RAW_BASE + path;
+    img.alt = file.name;
+    img.dataset.repoPath = path;
+
+    const sel = window.getSelection();
+    if (sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      range.collapse(false);
+      range.insertNode(img);
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      img.parentNode.insertBefore(p, img.nextSibling);
+      sel.collapseToEnd();
+    } else {
+      editor.appendChild(img);
+    }
+
+    toast('Image uploaded: ' + filename, 'success');
+  } catch (e) {
+    toast('Upload failed: ' + e.message, 'error');
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// --- HTML to Markdown converter ---
+
+function htmlToMarkdown(el) {
+  let md = '';
+
+  function walk(node) {
+    if (node.nodeType === 3) {
+      md += node.textContent;
+      return;
+    }
+    if (node.nodeType !== 1) return;
+
+    const tag = node.tagName.toLowerCase();
+
+    switch (tag) {
+      case 'h1': md += '\n# '; walkChildren(node); md += '\n\n'; break;
+      case 'h2': md += '\n## '; walkChildren(node); md += '\n\n'; break;
+      case 'h3': md += '\n### '; walkChildren(node); md += '\n\n'; break;
+      case 'h4': md += '\n#### '; walkChildren(node); md += '\n\n'; break;
+      case 'p': walkChildren(node); md += '\n\n'; break;
+      case 'br': md += '\n'; break;
+      case 'strong': case 'b': md += '**'; walkChildren(node); md += '**'; break;
+      case 'em': case 'i': md += '*'; walkChildren(node); md += '*'; break;
+      case 's': case 'strike': case 'del': md += '~~'; walkChildren(node); md += '~~'; break;
+      case 'code':
+        if (node.parentElement && node.parentElement.tagName.toLowerCase() === 'pre') {
+          walkChildren(node);
+        } else {
+          md += '`'; walkChildren(node); md += '`';
+        }
+        break;
+      case 'pre':
+        md += '\n```\n';
+        walkChildren(node);
+        md += '\n```\n\n';
+        break;
+      case 'a': {
+        const href = node.getAttribute('href') || '';
+        md += '[';
+        walkChildren(node);
+        md += '](' + href + ')';
+        break;
+      }
+      case 'img': {
+        const alt = node.getAttribute('alt') || '';
+        const src = node.dataset.repoPath || node.getAttribute('src') || '';
+        md += '![' + alt + '](' + src + ')\n\n';
+        break;
+      }
+      case 'ul':
+        md += '\n';
+        for (const li of node.children) {
+          if (li.tagName.toLowerCase() === 'li') {
+            md += '- ';
+            walkChildren(li);
+            md += '\n';
+          }
+        }
+        md += '\n';
+        break;
+      case 'ol': {
+        let idx = 1;
+        md += '\n';
+        for (const li of node.children) {
+          if (li.tagName.toLowerCase() === 'li') {
+            md += idx + '. ';
+            walkChildren(li);
+            md += '\n';
+            idx++;
+          }
+        }
+        md += '\n';
+        break;
+      }
+      case 'blockquote':
+        md += '\n> ';
+        walkChildren(node);
+        md += '\n\n';
+        break;
+      case 'hr': md += '\n---\n\n'; break;
+      case 'div': walkChildren(node); md += '\n'; break;
+      default: walkChildren(node); break;
+    }
+  }
+
+  function walkChildren(node) {
+    for (const child of node.childNodes) walk(child);
+  }
+
+  walkChildren(el);
+
+  // Clean up excessive newlines
+  return md.replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+
+// --- Publish ---
+
+async function publish() {
+  const token = getToken();
+  if (!token) { toast('Configure a GitHub token in Settings first', 'error'); return; }
+
+  const title = document.getElementById('title').value.trim();
+  if (!title) { toast('Enter a post title', 'error'); return; }
+
+  const date = document.getElementById('date').value;
+  if (!date) { toast('Select a date', 'error'); return; }
+
+  const content = editor.innerText.trim();
+  if (!content) { toast('Write some content first', 'error'); return; }
+
+  const filename = getFilename();
+  if (!filename) { toast('Could not generate filename', 'error'); return; }
+
+  // Convert editor HTML to markdown
+  const markdownBody = htmlToMarkdown(editor);
+
+  const frontMatter = [
+    '---',
+    'layout: post',
+    'title: "' + title.replace(/"/g, '\\"') + '"',
+    'date: ' + date,
+    '---',
+    '',
+  ].join('\n');
+
+  const fullContent = frontMatter + markdownBody;
+  const base64Content = btoa(unescape(encodeURIComponent(fullContent)));
+
+  const btn = document.getElementById('publishBtn');
+  const overlay = document.getElementById('publishingOverlay');
+  btn.disabled = true;
+  btn.textContent = 'Publishing...';
+  overlay.classList.add('active');
+
+  try {
+    let sha = null;
+    try {
+      const existing = await fetch(`${API}/repos/${REPO}/contents/${filename}?ref=${BRANCH}`, {
+        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' },
+      });
+      if (existing.ok) {
+        const data = await existing.json();
+        sha = data.sha;
+      }
+    } catch (_) {}
+
+    const body = {
+      message: sha ? 'Update post: ' + title : 'Publish post: ' + title,
+      content: base64Content,
+      branch: BRANCH,
+    };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(`${API}/repos/${REPO}/contents/${filename}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github+json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || res.statusText);
+    }
+
+    toast('Published: ' + filename, 'success');
+  } catch (e) {
+    toast('Publish failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Publish';
+    overlay.classList.remove('active');
+  }
+}
+
+// --- Toast ---
+
+function toast(message, type) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + (type || 'info');
+  el.textContent = message;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
+}
+</script>
+</body>
+</html>

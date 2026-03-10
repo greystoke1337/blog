@@ -10,6 +10,11 @@ author:
 header_pages:
   - about.md
 
+exclude:
+  - editor.html
+  - CLAUDE.md
+  - README.md
+
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
