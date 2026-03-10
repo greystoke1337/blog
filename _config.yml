@@ -1,11 +1,11 @@
-title: Greystoke's Blog
-description: Projects, builds, and things I've learned along the way.
+title: Max's Projects
+description: Builds and things I've learned along the way.
 url: "https://greystoke1337.github.io"
 baseurl: "/blog"
 theme: minima
 
 author:
-  name: Greystoke
+  name: Max
 
 header_pages:
   - about.md
