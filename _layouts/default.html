@@ -22,26 +22,8 @@
     <div class="header-inner">
       <a class="logo-block" href="{{ '/' | relative_url }}">
         <span class="logo-name">Max's <span>Projects</span></span>
-        <span class="logo-tagline">Builds &amp; Things Learned // 2026</span>
+        <span class="logo-tagline">{{ site.description }}</span>
       </a>
-      <div class="header-data">
-        <div class="data-item">
-          <span class="data-label">Author</span>
-          <span class="data-value">{{ site.author.name }}</span>
-        </div>
-        <div class="data-item">
-          <span class="data-label">Location</span>
-          <span class="data-value accent">Montreal, QC</span>
-        </div>
-        <div class="data-item">
-          <span class="data-label">Field</span>
-          <span class="data-value">VFX // CG</span>
-        </div>
-        <div class="data-item">
-          <span class="data-label">Site</span>
-          <span class="data-value accent">Live</span>
-        </div>
-      </div>
       <nav>
         <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Posts</a>
         {% for p in site.header_pages %}
@@ -53,12 +35,6 @@
 
   <div class="page-layout">
     <aside class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">About</div>
-        <div class="op-patch">✈</div>
-        <span class="op-name">{{ site.author.name }}</span>
-        <p class="op-desc">French. VFX artist. Montreal.<br>Climbs. Rides. Flies.</p>
-      </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Topics</div>
         <div class="tag-grid">
@@ -125,16 +101,10 @@
 
   <footer>
     <div class="footer-col">
-      <span class="footer-label">Author</span>
-      <span class="footer-val">{{ site.author.name }}</span>
-    </div>
-    <div class="footer-col footer-col-mid">
-      <span class="footer-label">Location</span>
-      <span class="footer-val">Montreal, QC — Canada</span>
+      <span class="footer-val">{{ site.title }}</span>
     </div>
     <div class="footer-col footer-col-right">
-      <span class="footer-label">Site</span>
-      <span class="footer-val footer-orange">GitHub Pages</span>
+      <span class="footer-val footer-orange">{{ site.url }}{{ site.baseurl }}</span>
     </div>
   </footer>
 
