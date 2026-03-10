@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if page.title %}{{ page.title }} — {% endif %}{{ site.title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  {% feed_meta %}
+  {% seo %}
+</head>
+<body>
+
+  <div class="classbar">
+    <span class="mono small">{{ site.url }}{{ site.baseurl }}</span>
+    <span class="classbar-center">{{ site.title }}</span>
+    <span class="mono small">2026</span>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <a class="logo-block" href="{{ '/' | relative_url }}">
+        <span class="logo-name">Max's <span>Projects</span></span>
+        <span class="logo-tagline">Builds &amp; Things Learned // 2026</span>
+      </a>
+      <div class="header-data">
+        <div class="data-item">
+          <span class="data-label">Author</span>
+          <span class="data-value">{{ site.author.name }}</span>
+        </div>
+        <div class="data-item">
+          <span class="data-label">Location</span>
+          <span class="data-value accent">Montreal, QC</span>
+        </div>
+        <div class="data-item">
+          <span class="data-label">Field</span>
+          <span class="data-value">VFX // CG</span>
+        </div>
+        <div class="data-item">
+          <span class="data-label">Site</span>
+          <span class="data-value accent">Live</span>
+        </div>
+      </div>
+      <nav>
+        <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Posts</a>
+        {% for p in site.header_pages %}
+          <a href="{{ p | relative_url }}"{% if page.url contains p %} class="active"{% endif %}>{{ site.pages | where: "path", p | map: "title" | first }}</a>
+        {% endfor %}
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">About</div>
+        <div class="op-patch">✈</div>
+        <span class="op-name">{{ site.author.name }}</span>
+        <p class="op-desc">French. VFX artist. Montreal.<br>Climbs. Rides. Flies.</p>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Topics</div>
+        <div class="tag-grid">
+          <a class="tag" href="{{ '/' | relative_url }}">All</a>
+          {% assign all_tags = site.posts | map: "tags" | flatten | uniq | sort %}
+          {% for tag in all_tags %}
+            <a class="tag" href="{{ '/' | relative_url }}">{{ tag }}</a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Info</div>
+        <div class="readout">
+          <div class="readout-row">
+            <span class="r-key">Posts</span>
+            <span class="r-val hot">{{ site.posts | size }}</span>
+          </div>
+          <div class="readout-row">
+            <span class="r-key">Platform</span>
+            <span class="r-val">GH Pages</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      {{ content }}
+    </main>
+
+    <aside class="sidebar sidebar-right">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Recent</div>
+        <div class="readout">
+          {% for post in site.posts limit:5 %}
+          <div class="readout-row">
+            <a class="r-key recent-link" href="{{ post.url | relative_url }}">{{ post.title | truncate: 28 }}</a>
+            <span class="r-val hot">→</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Info</div>
+        <div class="readout">
+          <div class="readout-row">
+            <span class="r-key">Last post</span>
+            <span class="r-val">{{ site.posts.first.date | date: "%d %b" }}</span>
+          </div>
+          <div class="readout-row">
+            <span class="r-key">Build</span>
+            <span class="r-val">Jekyll</span>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Links</div>
+        <div class="tag-grid">
+          <a class="tag" href="{{ '/feed.xml' | relative_url }}">RSS</a>
+          <a class="tag" href="https://github.com/greystoke1337/blog">GitHub</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <div class="footer-col">
+      <span class="footer-label">Author</span>
+      <span class="footer-val">{{ site.author.name }}</span>
+    </div>
+    <div class="footer-col footer-col-mid">
+      <span class="footer-label">Location</span>
+      <span class="footer-val">Montreal, QC — Canada</span>
+    </div>
+    <div class="footer-col footer-col-right">
+      <span class="footer-label">Site</span>
+      <span class="footer-val footer-orange">GitHub Pages</span>
+    </div>
+  </footer>
+
+</body>
+</html>
