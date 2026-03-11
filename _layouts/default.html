@@ -33,7 +33,8 @@
       <nav>
         <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Posts</a>
         {% for p in site.header_pages %}
-          <a href="{{ p | relative_url }}"{% if page.url contains p %} class="active"{% endif %}>{{ site.pages | where: "path", p | map: "title" | first }}</a>
+          {% assign pg = site.pages | where: "path", p | first %}
+          <a href="{{ pg.url | relative_url }}"{% if page.url == pg.url %} class="active"{% endif %}>{{ pg.title }}</a>
         {% endfor %}
       </nav>
     </div>
