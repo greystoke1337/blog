@@ -9,12 +9,12 @@
     --ink-mid:    #6e6e66;
     --ink-light:  #a8a89e;
     --ink-faint:  #dedad2;
-    --orange:     #c8622a;   /* muted NASA orange */
-    --orange-dim: #a84e20;
-    --orange-pale:#faf0ea;
-    --blue:       #4a6a9e;   /* muted NASA blue */
-    --blue-pale:  #edf1f8;
-    --red:        #b85050;
+    --nasa-red:      #E84528;   /* NASA Red (NHB 1430.2) */
+    --nasa-red-dim:  #C73A22;
+    --nasa-red-pale: #FDF0ED;
+    --nasa-blue:     #105EA0;   /* NASA blue stripe */
+    --nasa-blue-pale:#EAF0F8;
+    --nasa-gray:     #8B8B83;   /* NASA Warm Gray */
     --rule:       #4a4a44;
     --gap: 1px;
   }
@@ -29,7 +29,7 @@
     background: var(--paper);
     color: var(--ink);
     font-family: 'Barlow', sans-serif;
-    font-weight: 400;
+    font-weight: 300;
     line-height: 1.6;
     min-height: 100vh;
     /* Subtle paper grain */
@@ -40,26 +40,20 @@
   /* ─── UTILITY ────────────────────────────────────────── */
   .mono { font-family: 'IBM Plex Mono', monospace; }
   .condensed { font-family: 'Barlow Condensed', sans-serif; }
-  .orange { color: var(--orange); }
-  .blue { color: var(--blue); }
+  .nasa-red { color: var(--nasa-red); }
+  .nasa-blue { color: var(--nasa-blue); }
 
   /* ─── OUTER FRAME ────────────────────────────────────── */
   /* Top classification bar */
   .classbar {
-    background: var(--paper-dark);
-    color: var(--ink-light);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    text-align: center;
-    padding: 5px 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background: var(--nasa-blue);
+    height: 4px;
+    padding: 0;
+    overflow: hidden;
   }
 
-  .classbar-center { flex: 1; text-align: center; }
+  .classbar * { display: none; }
+  .classbar-center { display: none; }
 
   /* Registration marks */
   .regmark {
@@ -69,18 +63,6 @@
     color: var(--ink-light);
   }
 
-  .regmark::before,
-  .regmark::after {
-    content: '';
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border: 1.5px solid var(--orange);
-    border-radius: 50%;
-    position: relative;
-  }
-
-  .regmark::before { box-shadow: inset 0 0 0 1.5px var(--paper), 1.5px 0 0 0 var(--orange); }
 
   /* ─── HEADER ─────────────────────────────────────────── */
   header {
@@ -99,8 +81,7 @@
 
   /* Logo block */
   .logo-block {
-    padding: 1rem 1.5rem;
-    border-right: 1px solid var(--ink-faint);
+    padding: 1rem 2rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -119,7 +100,7 @@
     color: var(--ink);
   }
 
-  .logo-name span { color: var(--orange); }
+  .logo-name span { color: var(--nasa-red); }
 
   .logo-tagline {
     font-family: 'IBM Plex Mono', monospace;
@@ -160,7 +141,7 @@
     text-transform: uppercase;
   }
 
-  .data-value.accent { color: var(--orange); }
+  .data-value.accent { color: var(--nasa-red); }
 
   /* Header nav */
   nav {
@@ -185,7 +166,7 @@
 
   nav a:first-child { border-left: none; }
   nav a:hover { background: var(--paper-dark); color: var(--ink); }
-  nav a.active { color: var(--orange); background: transparent; }
+  nav a.active { color: var(--nasa-red); background: transparent; }
 
   /* ─── LAYOUT ─────────────────────────────────────────── */
   .page {
@@ -227,11 +208,6 @@
     gap: 0.4rem;
   }
 
-  .sidebar-label::before {
-    content: '▸';
-    color: var(--orange);
-    font-size: 0.5rem;
-  }
 
   /* Operator card */
   .op-patch {
@@ -247,12 +223,6 @@
     overflow: hidden;
   }
 
-  .op-patch::after {
-    content: '';
-    position: absolute;
-    inset: 4px;
-    border: 1px dashed var(--ink-faint);
-  }
 
   .op-patch-icon {
     font-size: 2rem;
@@ -300,7 +270,7 @@
   }
 
   .tag:hover { background: var(--paper-dark); color: var(--ink); }
-  .tag.active { color: var(--orange); border-color: var(--orange); background: transparent; }
+  .tag.active { color: var(--nasa-red); border-color: var(--nasa-red); background: transparent; }
 
   /* Readout table */
   .readout {
@@ -337,7 +307,7 @@
     text-align: right;
   }
 
-  .r-val.hot { color: var(--orange); }
+  .r-val.hot { color: var(--nasa-red); }
 
   /* ─── MAIN ───────────────────────────────────────────── */
   main {
@@ -370,14 +340,13 @@
     text-transform: uppercase;
   }
 
-  .main-count span { color: var(--orange); }
+  .main-count span { color: var(--nasa-red); }
 
   /* ─── POST CARD ──────────────────────────────────────── */
   .post-card {
     border-bottom: 1px solid var(--ink-faint);
     cursor: pointer;
     transition: background 0.1s;
-    animation: slideUp 0.3s ease both;
   }
 
   .post-card:hover { background: var(--paper-dark); }
@@ -415,7 +384,7 @@
     font-weight: 400;
     font-size: 1.1rem;
     line-height: 1;
-    color: var(--orange);
+    color: var(--nasa-red);
     opacity: 0.6;
   }
 
@@ -500,7 +469,7 @@
     font-size: 0.75rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--orange);
+    color: var(--nasa-red);
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -557,7 +526,7 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.55rem;
     letter-spacing: 0.3em;
-    color: var(--orange);
+    color: var(--nasa-red);
     text-transform: uppercase;
     margin-bottom: 0.5rem;
   }
@@ -598,19 +567,6 @@
     border-left: 1px solid var(--ink-faint);
   }
 
-  /* Line numbers in margin */
-  .article-margin-left::before {
-    content: '01\A 02\A 03\A 04\A 05\A 06\A 07\A 08\A 09\A 10';
-    white-space: pre;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.45rem;
-    color: var(--ink-faint);
-    padding: 2rem 0.3rem;
-    position: absolute;
-    top: 0;
-    right: 0;
-    line-height: 3.5;
-  }
 
   .article-body {
     padding: 2.5rem 3rem;
@@ -641,21 +597,29 @@
   }
 
   .article-body a {
-    color: var(--orange);
+    color: var(--nasa-red);
     text-decoration: none;
-    border-bottom: 1px solid var(--orange);
+    border-bottom: 1px solid var(--nasa-red);
     transition: background 0.1s;
   }
 
   .article-body a:hover {
-    background: var(--orange-pale);
+    background: var(--nasa-red-pale);
   }
 
   /* ─── FOOTER ─────────────────────────────────────────── */
   footer {
-    border-top: 1px solid var(--ink-faint);
+    border-top: none;
     display: grid;
     grid-template-columns: 200px 1fr 200px;
+  }
+
+  footer::before {
+    content: '';
+    display: block;
+    height: 4px;
+    background: var(--nasa-blue);
+    grid-column: 1 / -1;
   }
 
   .footer-col {
@@ -685,66 +649,8 @@
     color: var(--ink);
   }
 
-  .footer-orange { color: var(--orange); }
+  .footer-accent { color: var(--nasa-red); }
 
-  /* ─── ANIMATIONS ─────────────────────────────────────── */
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ─── CORNER MARKS (technical drawing style) ─────────── */
-  .corner-marks {
-    position: fixed;
-    inset: 12px;
-    pointer-events: none;
-    z-index: 200;
-  }
-
-  .corner-marks::before,
-  .corner-marks::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border-color: var(--orange);
-    border-style: solid;
-    opacity: 0.4;
-  }
-
-  .corner-marks::before {
-    top: 0; left: 0;
-    border-width: 1px 0 0 1px;
-  }
-
-  .corner-marks::after {
-    bottom: 0; right: 0;
-    border-width: 0 1px 1px 0;
-  }
-
-  /* Extra corners via sidebar pseudo */
-  .sidebar::before,
-  .sidebar-right::before {
-    content: '';
-    position: fixed;
-    width: 16px;
-    height: 16px;
-    border-color: var(--orange);
-    border-style: solid;
-    opacity: 0.4;
-    pointer-events: none;
-    z-index: 200;
-  }
-
-  .sidebar::before {
-    top: 12px; right: 12px;
-    border-width: 1px 1px 0 0;
-  }
-
-  .sidebar-right::before {
-    bottom: 12px; left: 12px;
-    border-width: 0 0 1px 1px;
-  }
 
   /* ─── ADDITIONAL LAYOUT CLASSES ──────────────────────── */
   .recent-link {
@@ -759,7 +665,7 @@
     text-overflow: ellipsis;
   }
 
-  .recent-link:hover { color: var(--orange); }
+  .recent-link:hover { color: var(--nasa-red); }
 
   .footer-col-mid {
     flex: 1;
@@ -793,7 +699,7 @@
     font-weight: 400;
     font-size: 1.1rem;
     line-height: 1;
-    color: var(--orange);
+    color: var(--nasa-red);
     opacity: 0.6;
   }
 
@@ -809,9 +715,9 @@
     display: block;
   }
 
-  .post-title:hover { color: var(--orange); }
+  .post-title:hover { color: var(--nasa-red); }
 
-  .small { font-size: 0.55rem; color: #888; }
+  .small { font-size: 0.55rem; color: var(--ink-light); }
 
   /* ─── PAGE LAYOUT ────────────────────────────────────── */
   .page-layout {
@@ -864,12 +770,6 @@
     .article-margin-left, .article-margin-right { display: none; }
     .article-body { padding: 2rem 1.5rem; }
 
-    /* Hide decorative corner marks */
-    .corner-marks { display: none; }
-    .sidebar::before, .sidebar-right::before { display: none; }
-
-    /* Classbar: hide side items */
-    .classbar .mono.small { display: none; }
 
     /* Header: show hamburger, hide nav by default */
     .header-inner {
