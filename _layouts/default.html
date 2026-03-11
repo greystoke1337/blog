@@ -24,6 +24,11 @@
         <span class="logo-name">Max's <span>Projects</span></span>
         <span class="logo-tagline">{{ site.description }}</span>
       </a>
+      <button class="menu-toggle" aria-label="Menu" aria-expanded="false">
+        <span class="menu-bar"></span>
+        <span class="menu-bar"></span>
+        <span class="menu-bar"></span>
+      </button>
       <nav>
         <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Posts</a>
         {% for p in site.header_pages %}
@@ -113,5 +118,17 @@
     </div>
   </footer>
 
+  <script>
+    (function() {
+      var btn = document.querySelector('.menu-toggle');
+      var header = document.querySelector('header');
+      if (btn) {
+        btn.addEventListener('click', function() {
+          var open = header.classList.toggle('nav-open');
+          btn.setAttribute('aria-expanded', open);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

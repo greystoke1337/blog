@@ -746,15 +746,130 @@
     border-width: 0 0 1px 1px;
   }
 
-  /* ─── RESPONSIVE ─────────────────────────────────────── */
+  /* ─── HAMBURGER MENU BUTTON ──────────────────────────── */
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.8rem 1.2rem;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    border-left: 1px solid var(--ink-faint);
+  }
+
+  .menu-bar {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--ink);
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  /* Animate hamburger to X when open */
+  .nav-open .menu-toggle .menu-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .nav-open .menu-toggle .menu-bar:nth-child(2) {
+    opacity: 0;
+  }
+  .nav-open .menu-toggle .menu-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* ─── RESPONSIVE: TABLET ───────────────────────────────── */
   @media (max-width: 900px) {
     .page { grid-template-columns: 1fr; }
+    .page-layout { grid-template-columns: 1fr; }
     .sidebar, .sidebar-right { display: none; }
     .header-data { display: none; }
     footer { grid-template-columns: 1fr; }
     .article-wrapper { grid-template-columns: 0 1fr 0; }
     .article-margin-left, .article-margin-right { display: none; }
     .article-body { padding: 2rem 1.5rem; }
+
+    /* Hide decorative corner marks */
+    .corner-marks { display: none; }
+    .sidebar::before, .sidebar-right::before { display: none; }
+
+    /* Classbar: hide side items */
+    .classbar .mono.small { display: none; }
+
+    /* Header: show hamburger, hide nav by default */
+    .header-inner {
+      grid-template-columns: 1fr auto;
+    }
+
+    .menu-toggle {
+      display: flex;
+    }
+
+    nav {
+      display: none;
+      grid-column: 1 / -1;
+      border-left: none;
+      border-top: 1px solid var(--ink-faint);
+      flex-direction: column;
+    }
+
+    nav a {
+      border-left: none;
+      border-bottom: 1px solid var(--ink-faint);
+      padding: 0.9rem 1.5rem;
+      min-height: 44px;
+    }
+
+    nav a:last-child { border-bottom: none; }
+
+    .nav-open .header-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+    }
+
+    .nav-open nav {
+      display: flex;
+    }
+
+    /* Footer single column */
+    .footer-col { border-right: none; }
+    .footer-col-right { border-left: none; text-align: left; align-items: flex-start; }
+  }
+
+  /* ─── RESPONSIVE: PHONE ────────────────────────────────── */
+  @media (max-width: 600px) {
+    /* Smaller logo */
+    .logo-name { font-size: 1.5rem; }
+    .logo-block { padding: 0.7rem 1rem; }
+    .logo-tagline { font-size: 0.5rem; }
+
+    /* Article title */
+    .article-title { font-size: 1.8rem; }
+    .article-masthead { padding: 1.2rem 1rem; }
+    .article-body { padding: 1.2rem 1rem; max-width: 100%; }
+
+    /* Main header strip */
+    .main-header { padding: 0.8rem 1rem; }
+    .main-title { font-size: 1.15rem; }
+
+    /* Post cards: hide gutter */
+    .post-card-top { grid-template-columns: 1fr; }
+    .post-num { display: none; }
+    .post-body { grid-template-columns: 1fr; }
+    .post-gutter { display: none; }
+    .post-head-content { padding: 0.7rem 1rem; }
+    .post-content { padding: 0.8rem 1rem; }
+    .post-title { font-size: 1.25rem; }
+
+    /* Touch-friendly targets */
+    .back-btn { min-height: 44px; padding: 8px 14px; font-size: 0.65rem; }
+    .tag { min-height: 32px; display: inline-flex; align-items: center; padding: 4px 10px; }
+    .read-link { min-height: 44px; }
+
+    /* Prevent horizontal scroll on long words */
+    .article-body { overflow-wrap: break-word; word-break: break-word; }
   }
   /* ─── ADDITIONAL LAYOUT CLASSES ──────────────────────── */
   .page-layout {
@@ -829,12 +944,7 @@
 
   .small { font-size: 0.55rem; color: #888; }
 
-  @media (max-width: 900px) {
-    .page-layout { grid-template-columns: 1fr; }
-    .sidebar, .sidebar-right { display: none; }
-    .header-data { display: none; }
-    footer { grid-template-columns: 1fr; }
-  }
+  /* (mobile styles consolidated above) */
 
   /* ─── IMAGES ─────────────────────────────────────────── */
   .article-body img {
