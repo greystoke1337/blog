@@ -954,3 +954,34 @@
     margin: 2rem 0;
     border: 1px solid var(--ink-faint);
   }
+
+  /* ─── CODE BLOCKS ──────────────────────────────────────── */
+  .article-body pre {
+    background: var(--paper-dark);
+    border: 1px solid var(--ink-faint);
+    border-radius: 3px;
+    padding: 1.2rem 1.4rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    line-height: 1.55;
+  }
+
+  .article-body pre code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--ink);
+    background: none;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+  }
+
+  .article-body code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    background: var(--paper-dark);
+    border: 1px solid var(--ink-faint);
+    border-radius: 2px;
+    padding: 0.15em 0.4em;
+    color: var(--ink);
+  }
