@@ -411,6 +411,103 @@ body {
 </style>
 </head>
 <body>
+
+<style>
+  #lock-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #f7f7f7;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #lock-screen.hidden { display: none; }
+  .lock-box {
+    width: 320px;
+    border: 1px solid #dedad2;
+    background: #fff;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .lock-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #2e2e2a;
+    font-family: -apple-system, sans-serif;
+  }
+  .lock-title span { color: #c8622a; }
+  .lock-sub { font-size: 0.8rem; color: #8c8c82; margin-top: -0.5rem; }
+  .lock-input {
+    padding: 0.6rem 0.8rem;
+    font-size: 1rem;
+    border: 1px solid #dedad2;
+    background: #f7f7f7;
+    color: #2e2e2a;
+    outline: none;
+    width: 100%;
+  }
+  .lock-input:focus { border-color: #c8622a; }
+  .lock-btn {
+    padding: 0.6rem 1rem;
+    background: #c8622a;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .lock-btn:hover { background: #a84e20; }
+  .lock-error { font-size: 0.75rem; color: #b85050; display: none; }
+  .lock-error.show { display: block; }
+</style>
+
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-title">Max's <span>Projects</span></div>
+    <div class="lock-sub">Blog editor — enter password to continue</div>
+    <input id="lock-input" class="lock-input" type="password" placeholder="password" autocomplete="current-password" />
+    <div id="lock-error" class="lock-error">Wrong password.</div>
+    <button class="lock-btn" onclick="checkPassword()">Unlock</button>
+  </div>
+</div>
+
+<script>
+  const PW_HASH = "945c8f9d4fe6b4899a55b574ba21f40c9b541d4379ebb5264a5cf282134823cb";
+  const PW_KEY  = "blog_editor_auth";
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+  }
+
+  async function checkPassword() {
+    const val = document.getElementById("lock-input").value;
+    const hash = await sha256(val);
+    if (hash === PW_HASH) {
+      sessionStorage.setItem(PW_KEY, hash);
+      document.getElementById("lock-screen").classList.add("hidden");
+    } else {
+      document.getElementById("lock-error").classList.add("show");
+      document.getElementById("lock-input").value = "";
+      document.getElementById("lock-input").focus();
+    }
+  }
+
+  document.getElementById("lock-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") checkPassword();
+  });
+
+  (async () => {
+    const stored = sessionStorage.getItem(PW_KEY);
+    if (stored === PW_HASH) {
+      document.getElementById("lock-screen").classList.add("hidden");
+    }
+  })();
+</script>
+
 <div class="app">
   <div class="toolbar">
     <div class="toolbar-title">Blog Editor <span>/ greystoke1337/blog</span></div>
