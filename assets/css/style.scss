@@ -860,7 +860,7 @@
     .sidebar, .sidebar-right { display: none; }
     .header-data { display: none; }
     footer { grid-template-columns: 1fr; }
-    .article-wrapper { grid-template-columns: 0 1fr 0; }
+    .article-wrapper { grid-template-columns: 1fr; }
     .article-margin-left, .article-margin-right { display: none; }
     .article-body { padding: 2rem 1.5rem; }
 
