@@ -746,6 +746,80 @@
     border-width: 0 0 1px 1px;
   }
 
+  /* ─── ADDITIONAL LAYOUT CLASSES ──────────────────────── */
+  .recent-link {
+    color: var(--ink-mid);
+    text-decoration: none;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 300;
+    max-width: 130px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .recent-link:hover { color: var(--orange); }
+
+  .footer-col-mid {
+    flex: 1;
+    border-right: none;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+  }
+
+  .footer-col-right {
+    border-right: none;
+    border-left: 1px solid var(--ink-faint);
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .post-num {
+    border-right: 1px solid var(--ink-faint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 0;
+    background: var(--paper-dark);
+    width: 52px;
+    flex-shrink: 0;
+  }
+
+  .post-num-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--orange);
+    opacity: 0.6;
+  }
+
+  .post-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 500;
+    font-size: 1.55rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1.05;
+    color: var(--ink);
+    text-decoration: none;
+    display: block;
+  }
+
+  .post-title:hover { color: var(--orange); }
+
+  .small { font-size: 0.55rem; color: #888; }
+
+  /* ─── PAGE LAYOUT ────────────────────────────────────── */
+  .page-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+    min-height: calc(100vh - 120px);
+  }
+
   /* ─── HAMBURGER MENU BUTTON ──────────────────────────── */
   .menu-toggle {
     display: none;
@@ -871,80 +945,6 @@
     /* Prevent horizontal scroll on long words */
     .article-body { overflow-wrap: break-word; word-break: break-word; }
   }
-  /* ─── ADDITIONAL LAYOUT CLASSES ──────────────────────── */
-  .page-layout {
-    display: grid;
-    grid-template-columns: 200px 1fr 200px;
-    min-height: calc(100vh - 120px);
-  }
-
-  .recent-link {
-    color: var(--ink-mid);
-    text-decoration: none;
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 300;
-    max-width: 130px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .recent-link:hover { color: var(--orange); }
-
-  .footer-col-mid {
-    flex: 1;
-    border-right: none;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    display: flex;
-  }
-
-  .footer-col-right {
-    border-right: none;
-    border-left: 1px solid var(--ink-faint);
-    align-items: flex-end;
-    text-align: right;
-  }
-
-  .post-num {
-    border-right: 1px solid var(--ink-faint);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.8rem 0;
-    background: var(--paper-dark);
-    width: 52px;
-    flex-shrink: 0;
-  }
-
-  .post-num-val {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 400;
-    font-size: 1.1rem;
-    line-height: 1;
-    color: var(--orange);
-    opacity: 0.6;
-  }
-
-  .post-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 500;
-    font-size: 1.55rem;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    line-height: 1.05;
-    color: var(--ink);
-    text-decoration: none;
-    display: block;
-  }
-
-  .post-title:hover { color: var(--orange); }
-
-  .small { font-size: 0.55rem; color: #888; }
-
-  /* (mobile styles consolidated above) */
 
   /* ─── IMAGES ─────────────────────────────────────────── */
   .article-body img {
