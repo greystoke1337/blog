@@ -11,7 +11,6 @@ header_pages:
   - about.md
 
 exclude:
-  - editor.html
   - CLAUDE.md
   - README.md
 
