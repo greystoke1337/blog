@@ -2,18 +2,41 @@
 layout: post
 title: "Building Overhead Tracker"
 date: 2026-03-10
+tags: [Aviation, DIY, ESP32]
 ---
 
 What planes are flying directly above me right now?
 
-That question led me to build [Overhead Tracker](https://overheadtracker.com) — a real-time aircraft tracking system that answers it with three components:
+That question bugged me enough that I built something to answer it. [Overhead Tracker](https://overheadtracker.com) shows you every aircraft inside a configurable geofence around any location in the world — altitude, speed, phase, route, airline, registration. No API key, no build step, no dependencies.
 
-- **Web app** — A single-file HTML page deployed on GitHub Pages. Shows a live map with aircraft inside a configurable geofence, flight details, and aircraft photos. No frameworks, no build step.
+## How it works
 
-- **Raspberry Pi proxy** — A Node.js caching proxy running on a Pi 3B+, exposed via Cloudflare Tunnel. It caches ADS-B data from airplanes.live, enriches flights with route information, and serves a TFT display.
+The whole thing runs as a single HTML file. It geocodes your location via Nominatim, then hits a self-hosted Raspberry Pi proxy that pulls live ADS-B data from [airplanes.live](https://airplanes.live). The proxy caches results and exposes them through a Cloudflare Tunnel — so no ports to open, no dynamic DNS nonsense.
 
-- **ESP32 hardware display** — A touchscreen device that shows nearby flights on a 480x320 TFT. Handles WiFi setup via captive portal, logs flights to SD card, and cycles through aircraft with auto-paging.
+Flight phase is derived from speed, altitude, and vertical rate: LANDING, TAKEOFF, APPROACH, DESCENDING, CLIMBING, OVERHEAD. Each component figures this out independently, no coordination needed. Airlines are colour-coded by brand — Qantas red, Cathay green, Emirates gold. Aircraft types are translated from ICAO codes (B789 → B787-9, A20N → A320neo). Emergency squawks 7700/7600/7500 light up red.
 
-The system tracks flight phase (landing, climbing, cruising, overhead) using speed, altitude, and vertical rate. Each component derives phase independently using the same logic.
+## The ESP32 display
 
-Check it out live at [overheadtracker.com](https://overheadtracker.com).
+The web app was useful but I wanted something physical. Something that just sits there and tells me what's overhead without me having to open a browser.
+
+So I built a standalone display on a Freenove FNK0103S — ESP32 with a 4" 480×320 touchscreen. It polls the Pi proxy directly over LAN, cycles through overhead flights every 8 seconds, and has three touch buttons: WX (weather), GEO (cycles geofence radius), and CFG (captive portal for WiFi setup).
+
+![The ESP32 display showing a Qantas 737 on final approach into Sydney, 925 ft, 107 knots, 3.5 km out](/blog/assets/images/overhead-tracker-1.jpg)
+
+The firmware has a 3-tier fallback: Pi proxy → direct airplanes.live API → SD card cache. If the Pi is off, the device still boots clean — 3-second TCP timeout, no crash loop. The 16 KB JSON document is allocated once at startup and reused every cycle to avoid heap fragmentation on long sessions.
+
+OTA updates work over Wi-Fi after the first USB flash. The display shows a progress bar. You can also hit it from VS Code with Ctrl+Shift+B.
+
+![Weather screen: 20.4°C, partly cloudy, 94% humidity — Monday 9 March](/blog/assets/images/overhead-tracker-2.jpg)
+
+The weather screen pulls local conditions and shows them the same way as the flight data — same font, same layout. It felt wrong NOT to add it once the hardware was there.
+
+## The Pi proxy
+
+Node.js on a Pi 3B+, exposed via Cloudflare Tunnel. It caches ADS-B data from airplanes.live, enriches flights with route info, and drives a small TFT display on the side. The proxy also serves the web app — so the whole thing is self-contained if you want it to be.
+
+## Try it
+
+[overheadtracker.com](https://overheadtracker.com) — or clone the repo and open `index.html` directly. Everything is MIT licensed.
+
+I'm a plane nerd. This is NOT a weird project to have.
