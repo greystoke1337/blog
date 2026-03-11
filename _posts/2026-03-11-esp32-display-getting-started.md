@@ -1,219 +1,183 @@
 ---
 layout: post
-title: "Getting Started with an ESP32 4-Inch Display"
+title: "Deploying the Overhead Tracker to a Freenove ESP32"
 date: 2026-03-11
 tags: [ESP32, DIY, Tutorial]
 ---
 
-After building my [Overhead Tracker](/blog/2026/03/10/overhead-tracker.html) on a Freenove ESP32-S3 with a 4" touchscreen, I got a lot of questions about the hardware setup itself. This post walks through everything you need to go from an unboxed board to running code on the display — no prior microcontroller experience required.
+This is a step-by-step guide for flashing the [Overhead Tracker](https://github.com/greystoke1337/localized-air-traffic-tracker) firmware onto a fresh Freenove ESP32 4-inch display. By the end, you'll have a standalone device showing every aircraft flying over your location in real time.
+
+![Overhead Tracker display](/blog/assets/images/overhead-tracker-2.jpg)
 
 ## What you need
 
-**The board:** I use the [Freenove FNK0103S](https://store.freenove.com/products/fnk0103s). It's an ESP32-S3 with a built-in 4" 480x320 ST7796 TFT touchscreen and a capacitive touch layer. Everything is on one PCB — no wiring, no soldering. It runs about $25–30 USD.
+- **Freenove FNK0103S** — an ESP32 dev board with a built-in 4" 480×320 ST7796 touchscreen. ~$25–30 on the Freenove store or Amazon. Everything is on one PCB, no wiring required.
+- **A USB-C data cable** — not a charge-only cable. If the board doesn't show up as a serial port, the cable is the problem.
+- **A Raspberry Pi** (3B+ or newer) on the same network — runs the caching proxy between the device and the ADS-B API. You can skip this and use the direct API fallback, but the proxy is strongly recommended for reliability.
+- **A computer** with a terminal (macOS, Linux, or Windows with Git Bash / MSYS2).
 
-**A USB-C cable** — data-capable, not charge-only. If your cable doesn't show up as a serial port, it's probably charge-only. This is the number one beginner issue.
+## Step 1: Install arduino-cli
 
-**A computer** with Arduino IDE or PlatformIO installed.
+The project uses `arduino-cli` and a build script — not the Arduino IDE GUI. Install it:
 
-## Option A: Arduino IDE (simplest)
+**macOS (Homebrew):**
+```bash
+brew install arduino-cli
+```
 
-Arduino IDE is the easiest way to get started if you've never touched a microcontroller before.
+**Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+```
 
-### Install the IDE
+**Windows (MSYS2 / Git Bash):**
+Download the latest release from [arduino.github.io/arduino-cli](https://arduino.github.io/arduino-cli/latest/installation/) and add it to your PATH.
 
-Download [Arduino IDE 2.x](https://www.arduino.cc/en/software) and install it. Open it once so it creates its config directories.
+Then add ESP32 board support:
 
-### Add ESP32 board support
+```bash
+arduino-cli core update-index \
+  --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+arduino-cli core install esp32:esp32 \
+  --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+```
 
-1. Go to **File → Preferences**
-2. In "Additional Board Manager URLs", paste:
-   ```
-   https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-   ```
-3. Click OK
-4. Go to **Tools → Board → Boards Manager**
-5. Search for `esp32` and install **esp32 by Espressif Systems** (version 3.x)
+## Step 2: Install required libraries
 
-This downloads the ESP32-S3 toolchain, which takes a few minutes.
+```bash
+arduino-cli lib install "ArduinoJson"
+arduino-cli lib install "LovyanGFX"
+```
 
-### Select the board
+The SD and ArduinoOTA libraries are built into the ESP32 core, so no separate install is needed.
 
-1. Plug in your Freenove board via USB-C
-2. Go to **Tools → Board → esp32** and select **ESP32S3 Dev Module**
-3. Go to **Tools → Port** and select the COM port that appeared (on Windows it'll be something like `COM3`)
-4. Set these under Tools:
-   - **USB CDC On Boot:** Enabled
-   - **Flash Size:** 16MB
-   - **Partition Scheme:** 16M Flash (3MB APP/9.9MB FATFS)
-   - **PSRAM:** OPI PSRAM
+## Step 3: Clone the repo
 
-### Install display libraries
+```bash
+git clone https://github.com/greystoke1337/localized-air-traffic-tracker.git
+cd localized-air-traffic-tracker/tracker_live_fnk0103s
+```
 
-Go to **Sketch → Include Library → Manage Libraries** and install:
+## Step 4: Create your secrets file
 
-- **TFT_eSPI** by Bodmer — the display driver
-- **lvgl** (optional) — if you want a full UI framework later
+```bash
+cp secrets.h.example secrets.h
+```
 
-### Configure TFT_eSPI for the ST7796
-
-This is the step most tutorials skip. TFT_eSPI needs to know your exact display hardware. Find the library folder (usually `Documents/Arduino/libraries/TFT_eSPI/`) and edit `User_Setup.h`:
+Open `secrets.h` and set your default WiFi credentials:
 
 ```cpp
-// Comment out the default driver and enable ST7796
-#define ST7796_DRIVER
-
-// Resolution
-#define TFT_WIDTH  320
-#define TFT_HEIGHT 480
-
-// Pin assignments for Freenove FNK0103S
-#define TFT_MOSI 11
-#define TFT_SCLK 12
-#define TFT_CS   10
-#define TFT_DC   13
-#define TFT_RST  -1
-#define TFT_BL   14
-
-// SPI frequency
-#define SPI_FREQUENCY 40000000
+#pragma once
+#define WIFI_SSID_DEFAULT "your-wifi-ssid"
+#define WIFI_PASS_DEFAULT "your-wifi-password"
 ```
 
-Pin numbers vary by board. If you're using a different ESP32 display board, check its schematic or wiki for the correct SPI pins.
+These are fallback defaults baked into the firmware. You'll also be able to configure WiFi through the on-device captive portal after flashing (more on that below).
 
-### Upload your first sketch
+## Step 5: Configure the proxy address
 
-Paste this into a new sketch:
+Open `tracker_live_fnk0103s.ino` and find the `PROXY_HOST` definition. Set it to your Raspberry Pi's local IP address:
 
 ```cpp
-#include <TFT_eSPI.h>
-
-TFT_eSPI tft = TFT_eSPI();
-
-void setup() {
-  tft.init();
-  tft.setRotation(1);
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextSize(3);
-  tft.drawString("Hello, ESP32!", 40, 140);
-}
-
-void loop() {}
+#define PROXY_HOST "192.168.1.100"  // your Pi's IP
 ```
 
-Hit the upload button (→). The IDE compiles and flashes over USB. You should see "Hello, ESP32!" on the display within 30 seconds.
+The proxy runs on port `3000` by default. If you don't have a Pi set up yet, the tracker will fall back to querying the ADS-B API directly — it'll still work, just with slightly less reliability under heavy use.
 
-## Option B: PlatformIO (recommended for real projects)
+## Step 6: Flash the firmware
 
-PlatformIO is a VS Code extension that gives you proper dependency management, build configurations, and OTA support. It's what I use for all my ESP32 projects.
+Plug in your Freenove board via USB-C and run:
 
-### Setup
-
-1. Install [VS Code](https://code.visualstudio.com/)
-2. Install the **PlatformIO IDE** extension from the marketplace
-3. Create a new project: **PlatformIO Home → New Project**
-   - Board: `Freenove ESP32-S3` (or `esp32-s3-devkitc-1` if not listed)
-   - Framework: Arduino
-
-This generates a `platformio.ini` file. Edit it:
-
-```ini
-[env:esp32s3]
-platform = espressif32
-board = esp32-s3-devkitc-1
-framework = arduino
-monitor_speed = 115200
-board_build.arduino.memory_type = qio_opi
-board_build.psram = enabled
-lib_deps =
-    bodmer/TFT_eSPI@^2.5.0
-build_flags =
-    -DUSER_SETUP_LOADED=1
-    -DST7796_DRIVER=1
-    -DTFT_WIDTH=320
-    -DTFT_HEIGHT=480
-    -DTFT_MOSI=11
-    -DTFT_SCLK=12
-    -DTFT_CS=10
-    -DTFT_DC=13
-    -DTFT_RST=-1
-    -DTFT_BL=14
-    -DSPI_FREQUENCY=40000000
+```bash
+./build.sh
 ```
 
-The `build_flags` approach is cleaner than editing `User_Setup.h` — your display config lives in the project, not in a global library folder.
+That's it. The build script compiles the firmware, auto-detects your board's USB port, and uploads. You should see the boot sequence animation on the display within about 30 seconds.
 
-Put your code in `src/main.cpp` and hit the PlatformIO upload button.
+Other useful build commands:
 
-## Common issues
+| Command | What it does |
+|---------|-------------|
+| `./build.sh compile` | Compile only, don't upload |
+| `./build.sh upload` | Upload the last compiled build |
+| `./build.sh monitor` | Open serial monitor (115200 baud) |
+| `./build.sh ota` | Flash over WiFi to `overhead-tracker.local` |
+| `./build.sh safe` | Run tests + compile with strict warnings |
 
-**Board not detected (no COM port).** Try a different USB-C cable — charge-only cables are extremely common. On Windows, you may also need the [CP210x driver](https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers) or the [CH340 driver](http://www.wch-ic.com/downloads/CH341SER_EXE.html) depending on your board's USB-to-serial chip.
+If upload fails with "No serial data received", hold the **BOOT** button on the board while the script tries to connect, then release once you see "Connecting..." in the terminal.
 
-**White screen after upload.** Your TFT_eSPI pin configuration is wrong. Double-check every pin number against your board's documentation. The most common mistake is swapping MOSI and SCLK.
+## Step 7: Connect to WiFi
 
-**Display works but colours are inverted.** Add `#define TFT_INVERSION_ON` to your setup or build flags.
+On first boot — or if no saved WiFi config is found — the tracker launches a **captive portal**:
 
-**Upload fails with "No serial data received".** Hold the **BOOT** button on the board while clicking upload, then release it once "Connecting..." appears. Some boards need this for the first flash; subsequent uploads usually work without it.
+1. The display shows: `CONNECT TO WI-FI: OVERHEAD-SETUP`
+2. On your phone or laptop, join the WiFi network called **OVERHEAD-SETUP** (open, no password)
+3. A setup page should open automatically. If it doesn't, navigate to `192.168.4.1` in your browser
+4. Fill in three fields:
+   - **Wi-Fi Network** — your home WiFi SSID
+   - **Wi-Fi Password** — your WiFi password
+   - **Location** — a place name like `"Russell Lea, Sydney Airport"` or `"Brooklyn, New York"`
+5. Hit save. The device reboots, connects to your WiFi, and geocodes the location name into coordinates using OpenStreetMap
 
-**Crashes or reboots on startup.** If you're allocating large buffers, enable PSRAM in your board settings. The ESP32-S3 has 8MB of PSRAM on the Freenove board — use it for frame buffers, JSON parsing, and image decoding.
+The credentials and location are stored in the ESP32's non-volatile storage (NVS), so they survive reboots and power cycles. You never need to recompile to change WiFi networks.
 
-## Adding WiFi
+### Re-entering setup mode
 
-Once the display works, connecting to WiFi is straightforward:
+If you move the device to a new network or need to change the location, double-tap the **CFG** button on the bottom navigation bar (within 3 seconds). This clears the saved config and reboots into the captive portal.
 
-```cpp
-#include <WiFi.h>
+### If WiFi connection fails
 
-void setup() {
-  WiFi.begin("YourSSID", "YourPassword");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-  }
-  // Now you can make HTTP requests
-}
+If the device can't connect after ~20 seconds, it shows a failure screen with two touch buttons:
+
+- **RECONFIGURE** — clears saved WiFi and launches the captive portal again
+- **RETRY** — reboots and tries the saved credentials one more time
+
+## Step 8: Set up the Pi proxy (recommended)
+
+The proxy is a lightweight Node.js server that caches ADS-B API responses, preventing rate limits when the device polls every 15 seconds.
+
+Full setup instructions are in [PI_PROXY_SETUP.md](https://github.com/greystoke1337/localized-air-traffic-tracker/blob/main/PI_PROXY_SETUP.md) in the repo. The short version:
+
+1. Install Node.js on your Pi
+2. Copy the proxy files over
+3. Run `npm install && npm start`
+4. The proxy listens on port 3000
+
+The proxy also serves weather data from Open-Meteo, which powers the weather screen on the device (tap **WX** on the nav bar).
+
+## What you should see
+
+Once connected, the tracker cycles through nearby flights every 8 seconds. Each flight card shows:
+
+- **Callsign** and airline name (color-coded for ~46 airlines)
+- **Aircraft type** and registration
+- **Route** — departure and arrival airports
+- **Dashboard** — flight phase, altitude, speed, and distance from your location
+
+Tap the **GEO** button to cycle the geofence radius between 5 km, 10 km, and 20 km. The device tracks up to 20 flights simultaneously and refreshes data every 15 seconds.
+
+## Troubleshooting
+
+**Board not detected.** Try a different USB-C cable. Charge-only cables are extremely common and won't work. On Windows, you may need the [CP210x](https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers) or [CH340](http://www.wch-ic.com/downloads/CH341SER_EXE.html) USB driver.
+
+**White/blank screen after flash.** The display driver config in `lgfx_config.h` should match the Freenove FNK0103S out of the box. If you're using a different board, the pin assignments will need to change.
+
+**Captive portal doesn't appear.** Make sure you're connected to the `OVERHEAD-SETUP` network. Try navigating to `192.168.4.1` manually. Some phones aggressively disconnect from networks without internet — disable auto-switch temporarily.
+
+**"No flights" showing.** Check your geofence radius — 5 km is tight. Try 20 km first. Also verify your location was geocoded correctly by checking the header bar on the display. If the proxy isn't reachable, the device falls back to direct API queries — watch the serial monitor (`./build.sh monitor`) for connection errors.
+
+**Crashes or reboots.** Open the serial monitor to see error output. The device has a 30-second hardware watchdog, so if a network request hangs, it will restart automatically. Make sure PSRAM is enabled in the board configuration (the build script handles this).
+
+## OTA updates
+
+After the initial USB flash, you can push firmware updates over WiFi:
+
+```bash
+./build.sh ota
 ```
 
-For a production project, don't hardcode credentials. Use a captive portal (like the WiFiManager library) or store them in NVS (non-volatile storage) so users can configure WiFi without recompiling.
+This uploads to `overhead-tracker.local` via mDNS. The display shows a green progress bar during the update. Your device needs to be on the same network as your computer.
 
-## Adding touch input
+## 3D-printed enclosure
 
-The Freenove board uses a capacitive touch controller (typically GT911 or FT6236). Install the appropriate library and read touch coordinates:
-
-```cpp
-#include <TFT_eSPI.h>
-
-TFT_eSPI tft = TFT_eSPI();
-
-void setup() {
-  tft.init();
-  tft.setRotation(1);
-  tft.fillScreen(TFT_BLACK);
-}
-
-void loop() {
-  uint16_t x, y;
-  if (tft.getTouch(&x, &y)) {
-    tft.fillCircle(x, y, 5, TFT_WHITE);
-  }
-}
-```
-
-Touch calibration may be needed — TFT_eSPI includes a calibration sketch under **File → Examples → TFT_eSPI → Generic → Touch_calibrate**.
-
-## Resources
-
-Here are the references I keep coming back to:
-
-- [Freenove FNK0103S documentation and examples](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) — official repo with pinouts, schematics, and sample sketches
-- [TFT_eSPI library](https://github.com/Bodmer/TFT_eSPI) — the display driver, with setup guides for dozens of boards
-- [ESP32-S3 datasheet](https://www.espressif.com/en/products/socs/esp32-s3) — pin functions, memory map, peripheral details
-- [Arduino-ESP32 core docs](https://docs.espressif.com/projects/arduino-esp32/en/latest/) — Espressif's Arduino framework reference
-- [PlatformIO ESP32 guide](https://docs.platformio.org/en/latest/boards/espressif32/esp32-s3-devkitc-1.html) — board configuration and build options
-- [Random Nerd Tutorials — ESP32](https://randomnerdtutorials.com/projects-esp32/) — beginner-friendly project walkthroughs covering WiFi, displays, sensors, and more
-- [LVGL documentation](https://docs.lvgl.io/) — if you want buttons, sliders, charts, and proper UI widgets on the display
-
-## What's next
-
-Once you have a working display with WiFi, the possibilities open up. You can pull data from any HTTP API and render it — weather, stock tickers, transit arrivals, flight trackers. The Freenove board has enough power and memory to run surprisingly complex UIs at a smooth refresh rate.
-
-Start simple: get "Hello, ESP32!" on the screen, then build from there.
+The repo includes STL and STEP files in the `tracker_live_fnk0103s/enclosure/` directory for a snap-fit case with a display stand. Print at 0.2mm layer height, no supports needed for the case body.
