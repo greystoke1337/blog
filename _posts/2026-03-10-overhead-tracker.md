@@ -5,9 +5,9 @@ date: 2026-03-10
 tags: [Aviation, DIY, ESP32]
 ---
 
-What planes are flying directly above me right now?
+I live underneath a flight path, and I'm always wondering what plane is flying overhead. I looked up online, and the only device that was well referenced was [the flight wall](https://https://theflightwall.com/). Unfortunately, can't buy it in Australia!
 
-That question bugged me enough that I built something to answer it. [Overhead Tracker](https://overheadtracker.com) shows you every aircraft inside a configurable geofence around any location in the world — altitude, speed, phase, route, airline, registration. No API key, no build step, no dependencies.
+So I built my own version, albeit a bit cheaper. [Overhead Tracker](https://overheadtracker.com) shows you every aircraft inside a configurable geofence around any location in the world, with altitude, speed, phase, route, airline, registration. No need for API keys, or build step  and dependencies.
 
 ## How it works
 
@@ -17,7 +17,7 @@ Flight phase is derived from speed, altitude, and vertical rate: LANDING, TAKEOF
 
 ## The ESP32 display
 
-The web app was useful but I wanted something physical. Something that just sits there and tells me what's overhead without me having to open a browser.
+I wanted to have a cool little display to look at from my living room, a fun interface that gives you some data.
 
 So I built a standalone display on a Freenove FNK0103S — ESP32 with a 4" 480×320 touchscreen. It polls the Pi proxy directly over LAN, cycles through overhead flights every 8 seconds, and has three touch buttons: WX (weather), GEO (cycles geofence radius), and CFG (captive portal for WiFi setup).
 
@@ -29,7 +29,7 @@ OTA updates work over Wi-Fi after the first USB flash. The display shows a progr
 
 ![Weather screen: 20.4°C, partly cloudy, 94% humidity — Monday 9 March](/blog/assets/images/overhead-tracker-2.jpg)
 
-The weather screen pulls local conditions and shows them the same way as the flight data — same font, same layout. It felt wrong NOT to add it once the hardware was there.
+The weather screen pulls local conditions and shows them the same way as the flight data — same font, same layout. I wanted to have something useful to look at, especially in Sydney, so when there's no planes, there's something interesting to look at.
 
 ## The Pi proxy
 
@@ -39,4 +39,4 @@ Node.js on a Pi 3B+, exposed via Cloudflare Tunnel. It caches ADS-B data from ai
 
 [overheadtracker.com](https://overheadtracker.com) — or clone the repo and open `index.html` directly. Everything is MIT licensed.
 
-I'm a plane nerd. This is NOT a weird project to have.
+Hope you enjoy it!
