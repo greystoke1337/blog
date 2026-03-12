@@ -312,6 +312,7 @@
   /* ─── MAIN ───────────────────────────────────────────── */
   main {
     padding: 0;
+    min-width: 0;
   }
 
   /* Section heading strip */
@@ -571,6 +572,7 @@
   .article-body {
     padding: 2.5rem 3rem;
     max-width: 680px;
+    min-width: 0;
   }
 
   .article-body p {
@@ -842,8 +844,9 @@
     .tag { min-height: 32px; display: inline-flex; align-items: center; padding: 4px 10px; }
     .read-link { min-height: 44px; }
 
-    /* Prevent horizontal scroll on long words */
+    /* Prevent horizontal scroll on long words/code */
     .article-body { overflow-wrap: break-word; word-break: break-word; }
+    .article-body pre { max-width: calc(100vw - 2rem); }
   }
 
   /* ─── IMAGES ─────────────────────────────────────────── */
