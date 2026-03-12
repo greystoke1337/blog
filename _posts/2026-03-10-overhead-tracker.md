@@ -124,7 +124,7 @@ The ESP32 has limited heap, and repeated `malloc`/`free` calls fragment it over 
 
 The web app is the primary interface, a single `index.html` that runs in any browser. Here's what it looks like tracking flights out of Sydney:
 
-![The Overhead Tracker web app showing QFA127, a Qantas A330-300 taking off from Sydney toward Hong Kong, with live telemetry, dark map, and aircraft photo](/blog/assets/images/overhead-tracker-3.png)
+<img src="/blog/assets/images/overhead-tracker-3.png" alt="The Overhead Tracker web app showing QFA127, a Qantas A330-300 taking off from Sydney toward Hong Kong, with live telemetry, dark map, and aircraft photo" loading="lazy">
 
 At the top, a search bar takes any location (geocoded via Nominatim) and two sliders control the geofence radius and altitude floor, useful for filtering out high-altitude overflights or ground vehicles. Below that, the flight info card shows everything enriched by the proxy: callsign, registration, aircraft type with weight class, airline name, colour-coded flight phase, and full route. A "RECEDING" or "APPROACHING" indicator tells you whether the aircraft is coming or going.
 
@@ -136,11 +136,11 @@ When a registration is available, the app pulls an aircraft photo from Planespot
 
 The hardware is a Freenove FNK0103S, an ESP32-S3 with a 4" 480x320 ST7796 TFT touchscreen. Three touch buttons sit in the nav bar: **WX** shows the weather screen, **GEO** cycles through geofence radii (5 / 10 / 20 km), and **CFG** launches a captive portal where you configure WiFi credentials and location.
 
-![The ESP32 display showing a Qantas 737 on final approach into Sydney, 925 ft, 107 knots, 3.5 km out](/blog/assets/images/overhead-tracker-1.jpg)
+<img src="/blog/assets/images/overhead-tracker-1.jpg" alt="The ESP32 display showing a Qantas 737 on final approach into Sydney, 925 ft, 107 knots, 3.5 km out" loading="lazy">
 
 After the first USB flash, OTA updates work over WiFi, the device advertises itself as `overhead-tracker.local` via mDNS. Run `./build.sh ota` and the TFT shows a green progress bar during the upload.
 
-![Weather screen: 20.4C, partly cloudy, 94% humidity — Monday 9 March](/blog/assets/images/overhead-tracker-2.jpg)
+<img src="/blog/assets/images/overhead-tracker-2.jpg" alt="Weather screen: 20.4C, partly cloudy, 94% humidity — Monday 9 March" loading="lazy">
 
 The weather screen pulls local conditions from Open-Meteo through the proxy, temperature, humidity, wind speed and direction, UV index. Same layout, same font as the flight data. When there are no planes overhead, there's still something useful on the display.
 

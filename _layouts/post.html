@@ -2,26 +2,28 @@
 layout: default
 ---
 
-<div class="article-masthead">
-  <a class="back-btn" href="{{ '/' | relative_url }}">Back</a>
-  <div class="article-label">
-    {{ page.date | date: "%Y-%m-%d" }}
-    {% for tag in page.tags %} // {{ tag }}{% endfor %}
+<article>
+  <div class="article-masthead">
+    <a class="back-btn" href="{{ '/' | relative_url }}">Back</a>
+    <div class="article-label">
+      {{ page.date | date: "%Y-%m-%d" }}
+      {% for tag in page.tags %} // {{ tag }}{% endfor %}
+    </div>
+    <h1 class="article-title">{{ page.title }}</h1>
+    <div class="article-meta">
+      <span class="post-date">{{ page.date | date: "%Y · %B · %d" }}</span>
+      {% for tag in page.tags %}
+        <span class="post-cat">{{ tag }}</span>
+      {% endfor %}
+      <span class="read-time">{{ page.content | number_of_words | divided_by: 200 | plus: 1 }} min read</span>
+    </div>
   </div>
-  <h1 class="article-title">{{ page.title }}</h1>
-  <div class="article-meta">
-    <span class="post-date">{{ page.date | date: "%Y · %B · %d" }}</span>
-    {% for tag in page.tags %}
-      <span class="post-cat">{{ tag }}</span>
-    {% endfor %}
-    <span class="read-time">{{ page.content | number_of_words | divided_by: 200 | plus: 1 }} min read</span>
-  </div>
-</div>
 
-<div class="article-wrapper">
-  <div class="article-margin-left"></div>
-  <div class="article-body">
-    {{ content }}
+  <div class="article-wrapper">
+    <div class="article-margin-left"></div>
+    <div class="article-body">
+      {{ content }}
+    </div>
+    <div class="article-margin-right"></div>
   </div>
-  <div class="article-margin-right"></div>
-</div>
+</article>

@@ -4,7 +4,7 @@ layout: default
 
 <div class="main-header">
   <span class="main-title">Posts</span>
-  <span class="main-count"><span>{{ site.posts | size }}</span> {{ site.posts | size | pluralize: "post", "posts" }}</span>
+  <span class="main-count"><span>{{ site.posts | size }}</span> {% if site.posts.size == 1 %}post{% else %}posts{% endif %}</span>
 </div>
 
 {% for post in site.posts %}

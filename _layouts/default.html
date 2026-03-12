@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% if page.title %}{{ page.title }} — {% endif %}{{ site.title }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% feed_meta %}
@@ -12,6 +13,8 @@
   {% include custom-head.html %}
 </head>
 <body>
+
+  <a class="skip-link" href="#main-content">Skip to content</a>
 
   <div class="classbar">
     <span class="mono small">{{ site.url }}{{ site.baseurl }}</span>
@@ -30,7 +33,7 @@
         <span class="menu-bar"></span>
         <span class="menu-bar"></span>
       </button>
-      <nav>
+      <nav aria-label="Main navigation">
         <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Posts</a>
         {% for p in site.header_pages %}
           {% assign pg = site.pages | where: "path", p | first %}
@@ -45,10 +48,10 @@
       <div class="sidebar-section">
         <div class="sidebar-label">Topics</div>
         <div class="tag-grid">
-          <a class="tag" href="{{ '/' | relative_url }}">All</a>
+          <span class="tag">All</span>
           {% assign all_tags = site.posts | map: "tags" | flatten | uniq | sort %}
           {% for tag in all_tags %}
-            <a class="tag" href="{{ '/' | relative_url }}">{{ tag }}</a>
+            <span class="tag">{{ tag }}</span>
           {% endfor %}
         </div>
       </div>
@@ -67,7 +70,7 @@
       </div>
     </aside>
 
-    <main>
+    <main id="main-content">
       {{ content }}
     </main>
 
@@ -100,13 +103,30 @@
         <div class="sidebar-label">Links</div>
         <div class="tag-grid">
           <a class="tag" href="{{ '/feed.xml' | relative_url }}">RSS</a>
-          <a class="tag" href="https://github.com/greystoke1337/blog">GitHub</a>
+          <a class="tag" href="https://github.com/greystoke1337/blog" target="_blank" rel="noopener">GitHub</a>
         </div>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Support</div>
-        <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-        <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'R6R61VRQHC');kofiwidget2.draw();</script>
+        <div class="kofi-placeholder"></div>
+        <script>
+          (function() {
+            var obs = new IntersectionObserver(function(entries) {
+              if (entries[0].isIntersecting) {
+                obs.disconnect();
+                var s = document.createElement('script');
+                s.src = 'https://storage.ko-fi.com/cdn/widget/Widget_2.js';
+                s.onload = function() {
+                  kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'R6R61VRQHC');
+                  kofiwidget2.draw();
+                };
+                document.head.appendChild(s);
+              }
+            });
+            var el = document.querySelector('.kofi-placeholder');
+            if (el) obs.observe(el);
+          })();
+        </script>
       </div>
     </aside>
   </div>
