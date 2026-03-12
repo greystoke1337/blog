@@ -175,6 +175,7 @@
   nav {
     border-left: 1px solid var(--ink-faint);
     display: flex;
+    grid-column: 3;
   }
 
   nav a {
