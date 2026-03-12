@@ -120,6 +120,18 @@ The firmware has a 3-tier fallback: Pi proxy over LAN, direct HTTPS to the ADS-B
 
 The ESP32 has limited heap, and repeated `malloc`/`free` calls fragment it over hours of continuous operation. The firmware allocates a single 16 KB JSON document at startup and reuses it every refresh cycle. No heap fragmentation, no mysterious crashes after running overnight.
 
+## The web app
+
+The web app is the primary interface — a single `index.html` that runs in any browser. Here's what it looks like tracking flights out of Sydney:
+
+![The Overhead Tracker web app showing QFA127, a Qantas A330-300 taking off from Sydney toward Hong Kong, with live telemetry, dark map, and aircraft photo](/blog/assets/images/overhead-tracker-3.png)
+
+At the top, a search bar takes any location (geocoded via Nominatim) and two sliders control the geofence radius and altitude floor — useful for filtering out high-altitude overflights or ground vehicles. Below that, the flight info card shows everything enriched by the proxy: callsign, registration, aircraft type with weight class, airline name, colour-coded flight phase, and full route. A "RECEDING" or "APPROACHING" indicator tells you whether the aircraft is coming or going.
+
+The six-cell data readout underneath displays raw ADS-B telemetry — altitude (QNH-corrected), ground speed, vertical speed, ground track, distance from your location, and squawk code. Below that, a Leaflet map on dark CartoDB tiles draws the geofence circle and plots the aircraft's position relative to the tracked location.
+
+When a registration is available, the app pulls an aircraft photo from Planespotters.net and displays it with photographer credit. The nav bar at the bottom lets you cycle through aircraft with PREV/NEXT, jump to the closest with NEAREST, toggle audio flight announcements with SND, or generate a shareable link. A session log tracks every aircraft seen since page load, with aggregate stats.
+
 ## The ESP32 display
 
 The hardware is a Freenove FNK0103S — an ESP32-S3 with a 4" 480x320 ST7796 TFT touchscreen. Three touch buttons sit in the nav bar: **WX** shows the weather screen, **GEO** cycles through geofence radii (5 / 10 / 20 km), and **CFG** launches a captive portal where you configure WiFi credentials and location.
