@@ -118,8 +118,13 @@
                 s.src = 'https://storage.ko-fi.com/cdn/widget/Widget_2.js';
                 s.onload = function() {
                   kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'R6R61VRQHC');
-                  var el = document.querySelector('.kofi-placeholder');
-                  if (el) el.innerHTML = kofiwidget2.getHTML();
+                  var placeholder = document.querySelector('.kofi-placeholder');
+                  var saved = document.write;
+                  var html = '';
+                  document.write = document.writeln = function(s) { html += s; };
+                  kofiwidget2.draw();
+                  document.write = document.writeln = saved;
+                  if (placeholder && html) placeholder.innerHTML = html;
                 };
                 document.head.appendChild(s);
               }
