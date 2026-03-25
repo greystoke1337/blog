@@ -21,7 +21,7 @@ The project has five components that work together but can each function indepen
 
 **Foxtrot** is the second-generation display: a Waveshare ESP32-S3-Touch-LCD-4.3B with an 800x480 IPS screen, capacitive touch, and 8 MB of PSRAM. Bigger screen, smoother rendering, and a whole set of hardware challenges that earned [its own post](/blog/2026/03/19/foxtrot.html).
 
-**The Pi display** is a Raspberry Pi 3B+ driving a 3.5" TFT, running a Python/Pygame dashboard that auto-rotates between a flights page and a stats page showing proxy health and a 24-hour traffic histogram.
+**The Pi display** is a Raspberry Pi 3B+ driving a 3.5" TFT, running a Python/Pygame dashboard that auto-rotates between three pages: a flights page showing the two closest aircraft, a stats page with proxy health and a 24-hour traffic histogram, and a server status page showing connected device health cards.
 
 ## Finding the right APIs
 
@@ -31,7 +31,7 @@ The first problem was getting live aircraft positions. Commercial services like 
 
 All three services, [adsb.lol](https://adsb.lol), [adsb.fi](https://adsb.fi), and [airplanes.live](https://airplanes.live) — accept a simple point query: give them a latitude, longitude, and radius in nautical miles, and they return every aircraft in that circle. The response is a JSON array where each aircraft has a hex identifier, callsign, altitude, ground speed, vertical rate, heading, squawk code, and ICAO aircraft type code.
 
-Since these are volunteer-run, any one might go down at any time. The proxy races all three in parallel and uses the fastest response:
+Since these are volunteer-run, any one might go down at any time. Instead of racing all three in parallel (which wastes two API calls per request), the proxy tries them sequentially in round-robin order — one call per cache miss instead of three:
 
 ```javascript
 const apis = [
@@ -40,28 +40,34 @@ const apis = [
   { name: 'airplanes.live', url: `https://api.airplanes.live/v2/point/${lat}/${lon}/${radius}` },
 ];
 
-const result = await Promise.any(apis.map(api =>
-  fetch(api.url, { signal: AbortSignal.timeout(8000) })
-    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-));
+// Try APIs sequentially (round-robin) — 1 call per cache miss instead of 3
+const startIdx = apiRoundRobin % apis.length;
+for (let attempt = 0; attempt < apis.length; attempt++) {
+  const api = apis[(startIdx + attempt) % apis.length];
+  try {
+    const r = await fetch(api.url, { signal: AbortSignal.timeout(2500) });
+    if (r.status === 429) { cooldown(api); continue; }
+    if (!r.ok) continue;
+    data = await r.json();
+    break;
+  } catch { continue; }
+}
+apiRoundRobin++;
 ```
 
-Racing instead of sequential fallback means the response time is always the speed of the fastest API, not the slowest. The web app has its own fallback chain too — it tries the proxy first (6-second timeout), then falls back to hitting the APIs directly.
+The round-robin counter rotates which API is tried first, spreading load evenly across all three services. If one fails or returns a 429 rate-limit, it gets a 60-second cooldown and the next API in the rotation is tried immediately. The web app has its own fallback chain too — it tries the proxy first (6-second timeout), then falls back to hitting the APIs directly.
 
 ### Route and airline lookup
 
-ADS-B data gives you a callsign like `QFA1` and a hex code, but not where the flight is going. To get departure and arrival airports, the proxy queries two sources:
-
-1. **OpenSky Network** — `https://opensky-network.org/api/routes?callsign=QFA1` returns the route as an array of ICAO airport codes
-2. **adsbdb.com** — fallback if OpenSky doesn't have it, returns origin/destination in a nested JSON structure
+ADS-B data gives you a callsign like `QFA1` and a hex code, but not where the flight is going. To get departure and arrival airports, the proxy queries [adsbdb.com](https://www.adsbdb.com) — a community-run database that returns origin/destination airports for a given callsign. On the first time the proxy sees a new callsign, it blocks for up to 3 seconds to fetch the route from adsbdb before responding. This eliminates the "NO ROUTE DATA" problem where flights would appear without route information on first sight.
 
 Routes are cached with a 30-minute TTL (LRU-evicted at 5,000 entries). A flight's route doesn't change mid-air, so there's no point re-fetching it every 15 seconds.
 
-Airline names come from the ICAO callsign prefix — `QFA` maps to Qantas, `CPA` to Cathay Pacific, `UAE` to Emirates. The lookup table covers over 60 airlines, each colour-coded by one of eight brand colours: Qantas red, Cathay green, Emirates gold, and so on. Aircraft type codes get translated too — `B789` becomes `B787-9 Dreamliner`, `A20N` becomes `A320neo`. The airport database now covers nearly 400 airports worldwide after a recent expansion for a Chicago deployment.
+Airline names come from the ICAO callsign prefix — `QFA` maps to Qantas, `CPA` to Cathay Pacific, `UAE` to Emirates. The lookup table covers 46 airlines, each colour-coded by one of eight brand colours: Qantas red, Cathay green, Emirates gold, and so on. Aircraft type codes get translated too — `B789` becomes `B787-9 Dreamliner`, `A20N` becomes `A320neo`. The airport database covers nearly 600 airports worldwide after expanding for international deployments.
 
 ### Everything else
 
-The remaining APIs are straightforward: **Nominatim** (OpenStreetMap) for geocoding locations, **Planespotters.net** for aircraft photos by registration, **Open-Meteo** for weather data, and **CartoDB** for dark map tiles. Every single one is free and keyless. The entire project has zero API keys.
+The remaining APIs are straightforward: **Nominatim** (OpenStreetMap) for geocoding locations, **Planespotters.net** for aircraft photos by registration, **Open-Meteo** for weather data, and **CartoDB** for dark map tiles. Every single one is free and keyless. The only API key in the project is for **Resend**, used to send daily flight reports and route discovery emails.
 
 ## Flight phase detection
 
@@ -110,7 +116,7 @@ No thundering herd, no wasted API calls.
 
 ### Caching and stale fallback
 
-The proxy caches at three tiers: ADS-B data for 45 seconds, weather for 10 minutes, routes for 30 minutes. The key design decision: if an upstream API fails but stale cache exists, serve it. Flight data from 30 seconds ago is far better than an error. The response stays useful even if it's slightly out of date.
+The proxy caches at three tiers: ADS-B data for 15 seconds, weather for 10 minutes, routes for 30 minutes. The key design decision: if an upstream API fails but stale cache exists, serve it. Flight data from 30 seconds ago is far better than an error. The response stays useful even if it's slightly out of date.
 
 ### ESP32 fallback cascade
 
@@ -160,7 +166,19 @@ Emergency squawk codes get special treatment on both displays: 7700 (MAYDAY), 76
 
 The proxy started on a Raspberry Pi 3B+ with PM2 and a Cloudflare Tunnel, but I migrated it to Railway. No more undervoltage issues, no more SD card corruption scares, and deploys are a single command. It runs at `api.overheadtracker.com` with rate limiting (100 requests/min per IP) and a concurrency semaphore capping upstream API calls at 20 simultaneous requests.
 
-The caching strategy uses coordinate bucketing — nearby clients within the same geographic bucket share cached responses, so ten devices in the same house don't trigger ten upstream fetches. Flight data is cached for 45 seconds, routes for 30 minutes, weather for 10 minutes. APIs that fail get a 60-second cooldown before they're retried, and the system rotates through APIs round-robin to spread load.
+The caching strategy uses coordinate bucketing — nearby clients within the same geographic bucket share cached responses, so ten devices in the same house don't trigger ten upstream fetches. Flight data is cached for 15 seconds, routes for 30 minutes, weather for 10 minutes. APIs that fail get a 60-second cooldown before they're retried, and the system rotates through APIs round-robin to spread load.
+
+## Recent additions
+
+Since the initial build, the project has grown a few operational features:
+
+**Route discovery tracking.** The proxy tracks every unique route it sees in a `known-routes.json` file (capped at 20,000 entries). At 21:00 AEST each night, it sends a discovery email via the Resend API listing any new routes spotted that day. A daily backfill service runs at 02:00 AEST, enriching any flights from the previous day that were missing route data.
+
+**Device heartbeat.** Both Echo and Foxtrot now POST a heartbeat to the proxy every 60 seconds, reporting firmware version, free heap memory, WiFi RSSI, and uptime. The proxy stores the latest heartbeat for each device and exposes it on the status dashboard.
+
+**Pi display server status page.** The Pi display gained a third auto-rotating page that shows server system stats alongside health cards for each connected device, pulling from the heartbeat data.
+
+**Interactive architecture diagram.** An `architecture.html` page built with Cytoscape.js visualises all 27 system components and their connections in a CRT amber aesthetic — draggable nodes, click-to-highlight, and tooltips on hover.
 
 ## Try it
 
