@@ -13,7 +13,7 @@ This is a step-by-step guide for flashing the [Overhead Tracker](https://github.
 
 - **Freenove FNK0103S** — an ESP32 dev board with a built-in 4" 480×320 ST7796 touchscreen. ~$25–30 on the Freenove store or Amazon. Everything is on one PCB, no wiring required.
 - **A USB-C data cable** — not a charge-only cable. If the board doesn't show up as a serial port, the cable is the problem.
-- **A Raspberry Pi** (3B+ or newer) on the same network — runs the caching proxy between the device and the ADS-B API. You can skip this and use the direct API fallback, but the proxy is strongly recommended for reliability.
+- **A Raspberry Pi** (3B+ or newer, optional) — only needed if you want to run a local caching proxy. The firmware defaults to the public proxy at `api.overheadtracker.com`, so a Pi is no longer required.
 - **A computer** with a terminal (macOS, Linux, or Windows with Git Bash / MSYS2).
 
 ## Step 1: Install arduino-cli
@@ -74,15 +74,15 @@ Open `secrets.h` and set your default WiFi credentials:
 
 These are fallback defaults baked into the firmware. You'll also be able to configure WiFi through the on-device captive portal after flashing (more on that below).
 
-## Step 5: Configure the proxy address
+## Step 5: Configure the proxy address (optional)
 
-Open `tracker_live_fnk0103s.ino` and find the `PROXY_HOST` definition. Set it to your Raspberry Pi's local IP address:
+The firmware defaults to the public proxy at `api.overheadtracker.com`, so you can skip this step if you don't need a local proxy. If you want to use your own Raspberry Pi proxy, open `tracker_live_fnk0103s.ino` and find the `PROXY_HOST` definition:
 
 ```cpp
-#define PROXY_HOST "192.168.1.100"  // your Pi's IP
+#define PROXY_HOST "192.168.1.100"  // your Pi's IP (default: api.overheadtracker.com)
 ```
 
-The proxy runs on port `3000` by default. If you don't have a Pi set up yet, the tracker will fall back to querying the ADS-B API directly — it'll still work, just with slightly less reliability under heavy use.
+If the proxy is unreachable, the tracker falls back to querying the ADS-B API directly — it'll still work, just with slightly less reliability under heavy use.
 
 ## Step 6: Flash the firmware
 
@@ -132,9 +132,9 @@ If the device can't connect after ~20 seconds, it shows a failure screen with tw
 - **RECONFIGURE** — clears saved WiFi and launches the captive portal again
 - **RETRY** — reboots and tries the saved credentials one more time
 
-## Step 8: Set up the Pi proxy (recommended)
+## Step 8: Set up a local Pi proxy (optional)
 
-The proxy is a lightweight Node.js server that caches ADS-B API responses, preventing rate limits when the device polls every 15 seconds.
+The device works out of the box with the public proxy at `api.overheadtracker.com`. If you'd prefer to run your own local proxy — for lower latency on your LAN or to avoid depending on the public server — you can set one up on a Raspberry Pi. The proxy is a lightweight Node.js server that caches ADS-B API responses, preventing rate limits when the device polls every 15 seconds.
 
 Full setup instructions are in [PI_PROXY_SETUP.md](https://github.com/greystoke1337/localized-air-traffic-tracker/blob/main/PI_PROXY_SETUP.md) in the repo. The short version:
 
