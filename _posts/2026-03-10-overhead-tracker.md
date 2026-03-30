@@ -160,6 +160,12 @@ The weather screen pulls local conditions from Open-Meteo through the proxy — 
 
 The second-generation display uses a Waveshare ESP32-S3-Touch-LCD-4.3B — an 800x480 IPS screen with capacitive touch and 8 MB of PSRAM. The larger screen fits a four-column dashboard (phase, altitude + vertical rate, speed, distance) alongside the flight card, and the capacitive touch is a big upgrade over the resistive panel on Echo. I wrote a [dedicated post about building Foxtrot](/blog/2026/03/19/foxtrot.html) — it turned out to be a much more interesting hardware journey than I expected.
 
+<img src="/blog/assets/images/PXL_20260329_075358957.jpg" alt="Foxtrot on a workbench showing NCA159, a heavy B747-8 freighter in takeoff phase at 850 ft" loading="lazy">
+
+<img src="/blog/assets/images/PXL_20260329_080202053.jpg" alt="Foxtrot tracking QFA476, a Qantas B737-800 from Melbourne to Sydney, displayed in front of a globe" loading="lazy">
+
+<img src="/blog/assets/images/PXL_20260329_081042942.jpg" alt="Foxtrot showing JST524, a Jetstar A320 descending from Melbourne to Sydney at 5,875 ft" loading="lazy">
+
 Emergency squawk codes get special treatment on both displays: 7700 (MAYDAY), 7600 (NORDO), and 7500 (HIJACK) trigger a flashing red banner across the screen. The layout compacts automatically to fit the alert without clipping the flight data.
 
 ## The proxy server
