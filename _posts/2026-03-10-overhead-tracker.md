@@ -3,6 +3,8 @@ layout: post
 title: "Building My Overhead Tracker"
 date: 2026-03-10
 tags: [Aviation, DIY, ESP32, Raspberry Pi]
+hero: /blog/assets/images/overhead-tracker-3.png
+hero_alt: Overhead Tracker web app showing live flights over Sydney
 ---
 
 I live underneath a flight path, and I'm always wondering what plane is flying overhead. I looked up online, and the only device that was well referenced was [the flight wall](https://theflightwall.com/). Unfortunately, can't buy it in Australia.
