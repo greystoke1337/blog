@@ -6,7 +6,7 @@
   <title>{% if page.title %}{{ page.title }} — {% endif %}{{ site.title }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Barlow+Condensed:wght@400;600;700&family=Barlow:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% feed_meta %}
   {% seo %}
@@ -14,149 +14,35 @@
 </head>
 <body>
 
-  <a class="skip-link" href="#main-content">Skip to content</a>
+<a class="skip" href="#main">Skip to content</a>
 
-  <div class="classbar">
-    <span class="mono small">{{ site.url }}{{ site.baseurl }}</span>
-    <span class="classbar-center">{{ site.title }}</span>
-    <span class="mono small">2026</span>
+<header>
+  <div class="hdr">
+    <a class="hdr-logo" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <nav class="hdr-nav">
+      <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="on"{% endif %}>Posts</a>
+      {% for p in site.header_pages %}
+        {% assign pg = site.pages | where: "path", p | first %}
+        <a href="{{ pg.url | relative_url }}"{% if page.url == pg.url %} class="on"{% endif %}>{{ pg.title }}</a>
+      {% endfor %}
+    </nav>
   </div>
+</header>
 
-  <header>
-    <div class="header-inner">
-      <a class="logo-block" href="{{ '/' | relative_url }}">
-        <span class="logo-name">Max's <span>Projects</span></span>
-        <span class="logo-tagline">{{ site.description }}</span>
-      </a>
-      <button class="menu-toggle" aria-label="Menu" aria-expanded="false">
-        <span class="menu-bar"></span>
-        <span class="menu-bar"></span>
-        <span class="menu-bar"></span>
-      </button>
-      <nav aria-label="Main navigation">
-        <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Posts</a>
-        {% for p in site.header_pages %}
-          {% assign pg = site.pages | where: "path", p | first %}
-          <a href="{{ pg.url | relative_url }}"{% if page.url == pg.url %} class="active"{% endif %}>{{ pg.title }}</a>
-        {% endfor %}
-      </nav>
+<main id="main">
+  {{ content }}
+</main>
+
+<footer>
+  <div class="ftr">
+    <span class="ftr-name">{{ site.title }}</span>
+    <div class="ftr-links">
+      <a class="ftr-link" href="{{ '/feed.xml' | relative_url }}">RSS</a>
+      <a class="ftr-link" href="https://github.com/greystoke1337/blog" target="_blank" rel="noopener">GitHub</a>
+      <a class="ftr-link" href="https://ko-fi.com/R6R61VRQHC" target="_blank" rel="noopener">Ko-fi</a>
     </div>
-  </header>
-
-  <div class="page-layout">
-    <aside class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Topics</div>
-        <div class="tag-grid">
-          <span class="tag">All</span>
-          {% assign all_tags = site.posts | map: "tags" | flatten | uniq | sort %}
-          {% for tag in all_tags %}
-            <span class="tag">{{ tag }}</span>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Info</div>
-        <div class="readout">
-          <div class="readout-row">
-            <span class="r-key">Posts</span>
-            <span class="r-val hot">{{ site.posts | size }}</span>
-          </div>
-          <div class="readout-row">
-            <span class="r-key">Platform</span>
-            <span class="r-val">GH Pages</span>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <main id="main-content">
-      {{ content }}
-    </main>
-
-    <aside class="sidebar sidebar-right">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Recent</div>
-        <div class="readout">
-          {% for post in site.posts limit:5 %}
-          <div class="readout-row">
-            <a class="r-key recent-link" href="{{ post.url | relative_url }}">{{ post.title | truncate: 28 }}</a>
-            <span class="r-val hot">→</span>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Info</div>
-        <div class="readout">
-          <div class="readout-row">
-            <span class="r-key">Last post</span>
-            <span class="r-val">{{ site.posts.first.date | date: "%d %b" }}</span>
-          </div>
-          <div class="readout-row">
-            <span class="r-key">Build</span>
-            <span class="r-val">Jekyll</span>
-          </div>
-        </div>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Links</div>
-        <div class="tag-grid">
-          <a class="tag" href="{{ '/feed.xml' | relative_url }}">RSS</a>
-          <a class="tag" href="https://github.com/greystoke1337/blog" target="_blank" rel="noopener">GitHub</a>
-        </div>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Support</div>
-        <div class="kofi-placeholder"></div>
-        <script>
-          (function() {
-            var obs = new IntersectionObserver(function(entries) {
-              if (entries[0].isIntersecting) {
-                obs.disconnect();
-                var s = document.createElement('script');
-                s.src = 'https://storage.ko-fi.com/cdn/widget/Widget_2.js';
-                s.onload = function() {
-                  kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'R6R61VRQHC');
-                  var placeholder = document.querySelector('.kofi-placeholder');
-                  var saved = document.write;
-                  var html = '';
-                  document.write = document.writeln = function(s) { html += s; };
-                  kofiwidget2.draw();
-                  document.write = document.writeln = saved;
-                  if (placeholder && html) placeholder.innerHTML = html;
-                };
-                document.head.appendChild(s);
-              }
-            });
-            var el = document.querySelector('.kofi-placeholder');
-            if (el) obs.observe(el);
-          })();
-        </script>
-      </div>
-    </aside>
   </div>
+</footer>
 
-  <footer>
-    <div class="footer-col">
-      <span class="footer-val">{{ site.title }}</span>
-    </div>
-    <div class="footer-col footer-col-right">
-      <span class="footer-val footer-accent">{{ site.url }}{{ site.baseurl }}</span>
-    </div>
-  </footer>
-
-  <script>
-    (function() {
-      var btn = document.querySelector('.menu-toggle');
-      var header = document.querySelector('header');
-      if (btn) {
-        btn.addEventListener('click', function() {
-          var open = header.classList.toggle('nav-open');
-          btn.setAttribute('aria-expanded', open);
-        });
-      }
-    })();
-  </script>
 </body>
 </html>
