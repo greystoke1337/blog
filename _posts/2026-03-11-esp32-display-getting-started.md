@@ -3,7 +3,7 @@ layout: post
 title: "Deploying the Overhead Tracker to a Freenove ESP32"
 date: 2026-03-11
 tags: [ESP32, DIY, Tutorial]
-hero: /blog/assets/images/overhead-tracker-1.jpg
+hero: /assets/images/overhead-tracker-1.jpg
 hero_alt: ESP32 display showing a Qantas 737 on final approach
 ---
 
