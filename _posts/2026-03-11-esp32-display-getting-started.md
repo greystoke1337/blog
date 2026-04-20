@@ -3,13 +3,13 @@ layout: post
 title: "Deploying the Overhead Tracker to a Freenove ESP32"
 date: 2026-03-11
 tags: [ESP32, DIY, Tutorial]
-hero: /assets/images/overhead-tracker-1.jpg
+hero: /blog/assets/images/overhead-tracker-1.jpg
 hero_alt: ESP32 display showing a Qantas 737 on final approach
 ---
 
 This is a step-by-step guide for flashing the [Overhead Tracker](https://github.com/greystoke1337/localized-air-traffic-tracker) firmware onto a fresh Freenove ESP32 4-inch display. By the end, you'll have a standalone device showing every aircraft flying over your location in real time.
 
-<img src="/assets/images/overhead-tracker-2.jpg" alt="The ESP32 Overhead Tracker weather screen showing temperature, humidity, and conditions on the 4-inch TFT display" loading="lazy">
+<img src="/blog/assets/images/overhead-tracker-2.jpg" alt="The ESP32 Overhead Tracker weather screen showing temperature, humidity, and conditions on the 4-inch TFT display" loading="lazy">
 
 ## What you need
 
