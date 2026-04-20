@@ -3,7 +3,7 @@ layout: post
 title: "Building My Overhead Tracker"
 date: 2026-03-10
 tags: [Aviation, DIY, ESP32, Raspberry Pi]
-hero: /assets/images/overhead-tracker-3.png
+hero: /blog/assets/images/overhead-tracker-3.png
 hero_alt: Overhead Tracker web app showing live flights over Sydney
 ---
 
@@ -132,7 +132,7 @@ The ESP32 has limited heap, and repeated `malloc`/`free` calls fragment it over 
 
 The web app is the primary interface, a single `index.html` that runs in any browser. Here's what it looks like tracking flights out of Sydney:
 
-<img src="/assets/images/overhead-tracker-3.png" alt="The Overhead Tracker web app showing QFA127, a Qantas A330-300 taking off from Sydney toward Hong Kong, with live telemetry, dark map, and aircraft photo" loading="lazy">
+<img src="/blog/assets/images/overhead-tracker-3.png" alt="The Overhead Tracker web app showing QFA127, a Qantas A330-300 taking off from Sydney toward Hong Kong, with live telemetry, dark map, and aircraft photo" loading="lazy">
 
 At the top, a search bar takes any location (geocoded via Nominatim) and two sliders control the geofence radius and altitude floor, useful for filtering out high-altitude overflights or ground vehicles. Below that, the flight info card shows everything enriched by the proxy: callsign, registration, aircraft type with weight class, airline name, colour-coded flight phase, and full route.
 
@@ -150,11 +150,11 @@ The whole thing supports metric and imperial units, a light/dark mode toggle, an
 
 The first hardware build uses a Freenove FNK0103S, an ESP32 with a 4" 480x320 SPI touchscreen. Three touch buttons sit in the nav bar: **WX** shows the weather screen, **GEO** cycles through geofence radii (5 / 10 / 20 km), and **CFG** launches a captive portal where you configure WiFi credentials and location.
 
-<img src="/assets/images/overhead-tracker-1.jpg" alt="The ESP32 display showing a Qantas 737 on final approach into Sydney, 925 ft, 107 knots, 3.5 km out" loading="lazy">
+<img src="/blog/assets/images/overhead-tracker-1.jpg" alt="The ESP32 display showing a Qantas 737 on final approach into Sydney, 925 ft, 107 knots, 3.5 km out" loading="lazy">
 
 After the first USB flash, OTA updates work over WiFi — the device advertises itself as `overhead-tracker.local` via mDNS. Run `./build.sh ota` and the TFT shows a green progress bar during the upload.
 
-<img src="/assets/images/overhead-tracker-2.jpg" alt="Weather screen: 20.4C, partly cloudy, 94% humidity — Monday 9 March" loading="lazy">
+<img src="/blog/assets/images/overhead-tracker-2.jpg" alt="Weather screen: 20.4C, partly cloudy, 94% humidity — Monday 9 March" loading="lazy">
 
 The weather screen pulls local conditions from Open-Meteo through the proxy — temperature, humidity, wind speed and direction. When there are no planes overhead, there's still something useful on the display.
 
@@ -162,11 +162,11 @@ The weather screen pulls local conditions from Open-Meteo through the proxy — 
 
 The second-generation display uses a Waveshare ESP32-S3-Touch-LCD-4.3B — an 800x480 IPS screen with capacitive touch and 8 MB of PSRAM. The larger screen fits a four-column dashboard (phase, altitude + vertical rate, speed, distance) alongside the flight card, and the capacitive touch is a big upgrade over the resistive panel on Echo. I wrote a [dedicated post about building Foxtrot](/blog/2026/03/19/foxtrot.html) — it turned out to be a much more interesting hardware journey than I expected.
 
-<img src="/assets/images/PXL_20260329_075358957.jpg" alt="Foxtrot on a workbench showing NCA159, a heavy B747-8 freighter in takeoff phase at 850 ft" loading="lazy">
+<img src="/blog/assets/images/PXL_20260329_075358957.jpg" alt="Foxtrot on a workbench showing NCA159, a heavy B747-8 freighter in takeoff phase at 850 ft" loading="lazy">
 
-<img src="/assets/images/PXL_20260329_080202053.jpg" alt="Foxtrot tracking QFA476, a Qantas B737-800 from Melbourne to Sydney, displayed in front of a globe" loading="lazy">
+<img src="/blog/assets/images/PXL_20260329_080202053.jpg" alt="Foxtrot tracking QFA476, a Qantas B737-800 from Melbourne to Sydney, displayed in front of a globe" loading="lazy">
 
-<img src="/assets/images/PXL_20260329_081042942.jpg" alt="Foxtrot showing JST524, a Jetstar A320 descending from Melbourne to Sydney at 5,875 ft" loading="lazy">
+<img src="/blog/assets/images/PXL_20260329_081042942.jpg" alt="Foxtrot showing JST524, a Jetstar A320 descending from Melbourne to Sydney at 5,875 ft" loading="lazy">
 
 Emergency squawk codes get special treatment on both displays: 7700 (MAYDAY), 7600 (NORDO), and 7500 (HIJACK) trigger a flashing red banner across the screen. The layout compacts automatically to fit the alert without clipping the flight data.
 
