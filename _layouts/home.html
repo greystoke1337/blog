@@ -2,36 +2,35 @@
 layout: default
 ---
 
-<div class="main-header">
-  <span class="main-title">Posts</span>
-  <span class="main-count"><span>{{ site.posts | size }}</span> {% if site.posts.size == 1 %}post{% else %}posts{% endif %}</span>
-</div>
+<div class="page">
+  <div class="list-header">
+    <span class="list-title">All Posts</span>
+    <span class="list-count">{{ site.posts | size }} {% if site.posts.size == 1 %}entry{% else %}entries{% endif %}</span>
+  </div>
 
-{% for post in site.posts %}
-<article class="post-card">
-  <div class="post-card-top">
-    <div class="post-num">
-      <span class="post-num-val">{{ forloop.rindex | prepend: "0" | slice: -2, 2 }}</span>
-    </div>
-    <div class="post-head-content">
-      <div class="post-meta-row">
-        <span class="post-date">{{ post.date | date: "%Y-%m-%d" }}</span>
-        {% for tag in post.tags %}
-          <span class="post-cat">{{ tag }}</span>
-        {% endfor %}
+  <div class="post-list">
+    {% for post in site.posts %}
+    <article class="post-card{% unless post.hero %} post-card--no-img{% endunless %}">
+      <div class="post-card-body">
+        <div class="post-card-meta">
+          <span class="post-date">{{ post.date | date: "%d %b %Y" }}</span>
+          {% for tag in post.tags %}
+            <span class="post-tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        <a class="post-card-title" href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        <p class="post-card-excerpt">{{ post.excerpt | strip_html | truncate: 180 }}</p>
+        <div class="post-card-footer">
+          <a class="read-link" href="{{ post.url | relative_url }}">Read</a>
+          <span class="read-time">{{ post.content | number_of_words | divided_by: 200 | plus: 1 }} min</span>
+        </div>
       </div>
-      <a class="post-title" href="{{ post.url | relative_url }}">{{ post.title }}</a>
-    </div>
-  </div>
-  <div class="post-body">
-    <div class="post-gutter"></div>
-    <div class="post-content">
-      <p class="post-excerpt">{{ post.excerpt | strip_html | truncate: 200 }}</p>
-      <div class="post-footer-row">
-        <a class="read-link" href="{{ post.url | relative_url }}">Read</a>
-        <span class="read-time">{{ post.content | number_of_words | divided_by: 200 | plus: 1 }} min read</span>
+      {% if post.hero %}
+      <div class="post-card-img">
+        <img src="{{ post.hero | relative_url }}" alt="{{ post.hero_alt | default: post.title }}" loading="lazy">
       </div>
-    </div>
+      {% endif %}
+    </article>
+    {% endfor %}
   </div>
-</article>
-{% endfor %}
+</div>
