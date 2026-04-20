@@ -3,7 +3,7 @@ layout: post
 title: "Building My Overhead Tracker"
 date: 2026-03-10
 tags: [Aviation, DIY, ESP32, Raspberry Pi]
-hero: /blog/assets/images/overhead-tracker-3.png
+hero: /assets/images/overhead-tracker-3.png
 hero_alt: Overhead Tracker web app showing live flights over Sydney
 ---
 
